@@ -1,13 +1,26 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI, propertiesAPI } from '@/app/lib/api';
+import { authAPI, propertiesAPI } from '@/lib/api';
 import { Building2, Home, Users, DollarSign, Plus, LogOut, Menu, X, Wrench, BarChart3, Bell, Search, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  property_type: string;
+  units?: any[];
+}
+
+interface User {
+  email: string;
+  full_name?: string;
+}
+
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
-  const [properties, setProperties] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
@@ -16,24 +29,29 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
- const loadData = async () => {
-  try {
-    const userData = await authAPI.getCurrentUser();
-    const propertiesData = await propertiesAPI.list();
-    
-    setUser(userData);
-    setProperties(Array.isArray(propertiesData) ? propertiesData : []);
-  } catch (error) {
-    console.error('Error loading data:', error);
-    setProperties([]);
-    router.push('/login');
-  } finally {
-    setLoading(false);
-  }
-};
-  const handleLogout = () => {
-    authAPI.logout();
-    router.push('/login');
+  const loadData = async () => {
+    try {
+      const userData = await authAPI.getCurrentUser();
+      const propertiesData = await propertiesAPI.list();
+      
+      setUser(userData as User);
+      setProperties(Array.isArray(propertiesData) ? propertiesData : []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      router.push('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      authAPI.logout();
+      router.push('/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/login');
+    }
   };
 
   if (loading) {
