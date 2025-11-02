@@ -1,22 +1,80 @@
 'use client'
 import React, { useState } from 'react';
-import { Building2, Users, DollarSign, Wrench, BarChart3, CheckCircle2, ArrowRight, Mail, Sparkles, Shield, Zap } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Building2, Users, DollarSign, Wrench, BarChart3, CheckCircle2, ArrowRight, Mail, Sparkles, Shield, Zap, AlertCircle, X } from 'lucide-react';
+import { authAPI } from '@/lib/api';
 
 export default function LandingPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Auth modal state
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Signup form state
+  const [signupFullName, setSignupFullName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupError, setSignupError] = useState('');
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  // Waitlist submit
+  const handleWaitlistSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const waitlist = JSON.parse(localStorage.getItem('waitlist') || '[]');
     waitlist.push({ email, date: new Date().toISOString() });
     localStorage.setItem('waitlist', JSON.stringify(waitlist));
-    
     setSubmitted(true);
     setEmail('');
-    
     setTimeout(() => setSubmitted(false), 3000);
+  };
+
+  // Handle Login
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+
+    try {
+      await authAPI.login(loginEmail, loginPassword);
+      setShowLogin(false);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setLoginError(err.message || 'Login failed. Check your credentials.');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // Handle Signup
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupError('');
+    setSignupLoading(true);
+
+    try {
+      await authAPI.signup({
+        email: signupEmail,
+        password: signupPassword,
+        full_name: signupFullName
+      });
+      // Auto-login after signup
+      await authAPI.login(signupEmail, signupPassword);
+      setShowSignup(false);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setSignupError(err.message || 'Signup failed. Try again.');
+    } finally {
+      setSignupLoading(false);
+    }
   };
 
   const features = [
@@ -130,11 +188,163 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[200] p-4">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md relative">
+            <button
+              onClick={() => setShowLogin(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+
+            {loginError && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 flex items-start gap-2 text-sm">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {loginLoading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+
+            <p className="text-center mt-6 text-sm text-gray-600">
+              Don't have an account?{' '}
+              <button
+                onClick={() => {
+                  setShowLogin(false);
+                  setShowSignup(true);
+                }}
+                className="text-blue-600 font-semibold hover:text-blue-700"
+              >
+                Sign up
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Signup Modal */}
+      {showSignup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[200] p-4">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md relative">
+            <button
+              onClick={() => setShowSignup(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
+
+            {signupError && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 flex items-start gap-2 text-sm">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{signupError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={signupFullName}
+                  onChange={(e) => setSignupFullName(e.target.value)}
+                  placeholder="John Doe"
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={8}
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Min. 8 characters</p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={signupLoading}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                {signupLoading ? 'Creating account...' : 'Sign Up'}
+              </button>
+            </form>
+
+            <p className="text-center mt-6 text-sm text-gray-600">
+              Already have an account?{' '}
+              <button
+                onClick={() => {
+                  setShowSignup(false);
+                  setShowLogin(true);
+                }}
+                className="text-blue-600 font-semibold hover:text-blue-700"
+              >
+                Log in
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo - Your PROPERTECH Logo */}
             <div className="flex items-center gap-3">
               <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="100" height="100" rx="20" fill="#1A89FF"/>
@@ -144,24 +354,32 @@ export default function LandingPage() {
               </svg>
               <div>
                 <div className="text-2xl font-bold text-gray-900">PROPERTECH</div>
-                <div className="text-xs text-gray-500 -mt-1">Smarter Property Management, Anywhere</div>
+                <div className="text-xs text-gray-500 -mt-1">Smarter Property Management</div>
               </div>
             </div>
-            <div className="hidden md:flex gap-8 items-center">
+            <div className="hidden md:flex gap-6 items-center">
               <a href="#features" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Features</a>
               <a href="#pricing" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Pricing</a>
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900 text-sm font-medium transition">Testimonials</a>
-              <a href="#waitlist" className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-semibold shadow-sm">
-                Get Started
-              </a>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="text-gray-700 hover:text-gray-900 text-sm font-medium transition"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setShowSignup(true)}
+                className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-semibold shadow-sm"
+              >
+                Sign Up
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section - Modern & Unique */}
+      {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Animated Background Elements */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
           <div className="absolute top-40 right-10 w-72 h-72 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
@@ -188,10 +406,13 @@ export default function LandingPage() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a href="#waitlist" className="group bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105">
+              <button
+                onClick={() => setShowSignup(true)}
+                className="group bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
+              >
                 Start Free 14-Day Trial
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
+              </button>
               <button className="border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl text-lg font-semibold hover:border-gray-300 hover:bg-gray-50 transition-all">
                 Watch 2-Min Demo
               </button>
@@ -213,7 +434,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Dashboard Preview - Modern Card */}
           <div className="mt-20 max-w-6xl mx-auto">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl transform rotate-1"></div>
@@ -247,7 +467,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section - Modern Grid */}
+      {/* Features Section */}
       <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -362,11 +582,14 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <button className={`w-full py-4 rounded-xl font-semibold transition-all ${
-                  plan.popular 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl' 
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                }`}>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className={`w-full py-4 rounded-xl font-semibold transition-all ${
+                    plan.popular 
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl' 
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
                   {plan.cta}
                 </button>
               </div>
@@ -405,10 +628,10 @@ export default function LandingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-xl focus:ring-4 focus:ring-white/50 focus:outline-none text-lg"
+                className="flex-1 px-6 py-4 rounded-xl focus:ring-4 focus:ring-white/50 focus:outline-none text-lg text-gray-900"
               />
               <button
-                onClick={handleSubmit}
+                onClick={handleWaitlistSubmit}
                 className="bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-all whitespace-nowrap shadow-xl hover:shadow-2xl"
               >
                 Get Started
