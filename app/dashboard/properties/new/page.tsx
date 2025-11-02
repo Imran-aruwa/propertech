@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { propertiesAPI } from '@/lib/api';
+import { propertiesAPI } from '@/app/lib/api';
 import { Building2, ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 

@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI, propertiesAPI } from '@/lib/api';
+import { authAPI, propertiesAPI } from '@/app/lib/api';
 import { Building2, Home, Users, DollarSign, Plus, LogOut, Menu, X, Wrench, BarChart3, Bell, Search, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 
