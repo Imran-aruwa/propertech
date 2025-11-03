@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { propertiesAPI } from '@/app/lib/api';
+import { propertiesAPI } from '@/lib/api';
 import { Building2, ArrowLeft, Plus, Home, Edit2, Trash2, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
