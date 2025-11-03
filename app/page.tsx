@@ -2,7 +2,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2, Users, DollarSign, Wrench, BarChart3, CheckCircle2, ArrowRight, Mail, Sparkles, Shield, Zap, AlertCircle, X } from 'lucide-react';
-import { authAPI } from '@/app/lib/api';
+import { authAPI } from '@/lib/api';
+
+
+
+
 
 export default function LandingPage() {
   const router = useRouter();
