@@ -6,6 +6,13 @@ import { Building2, ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { createProperty } from '@/lib/api';
 
+interface Property {
+  id: string;
+  name: string;
+  address: string;
+  property_type: string;
+  units?: any[];
+}
 
 export default function NewPropertyPage() {
   const router = useRouter();
@@ -37,8 +44,7 @@ export default function NewPropertyPage() {
       };
 
       const newProperty = await createProperty(propertyData) as Property;
-             router.push(`/dashboard/properties/${newProperty.id}`);
-
+      setSuccess(true);
       
       // Redirect to property detail page after 1 second
       setTimeout(() => {
@@ -60,8 +66,9 @@ export default function NewPropertyPage() {
             <Link
               href="/dashboard"
               className="text-gray-600 hover:text-gray-900 transition"
+              aria-label="Back to dashboard"
             >
-              <ArrowLeft className="w-6 h-6" />
+              <ArrowLeft className="w-6 h-6" aria-hidden="true" />
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Add New Property</h1>
@@ -76,14 +83,14 @@ export default function NewPropertyPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           {error && (
             <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
             <div className="mb-6 bg-green-50 text-green-600 p-4 rounded-lg flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <span>Property created successfully! Redirecting...</span>
             </div>
           )}
@@ -92,16 +99,17 @@ export default function NewPropertyPage() {
             {/* Basic Information */}
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
+                <Building2 className="w-5 h-5" aria-hidden="true" />
                 Basic Information
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="property-name" className="block text-sm font-medium text-gray-700 mb-2">
                     Property Name <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="property-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -112,10 +120,11 @@ export default function NewPropertyPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
                     Address <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="address"
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
@@ -126,10 +135,11 @@ export default function NewPropertyPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="property-type" className="block text-sm font-medium text-gray-700 mb-2">
                     Property Type
                   </label>
                   <select
+                    id="property-type"
                     value={propertyType}
                     onChange={(e) => setPropertyType(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -141,10 +151,11 @@ export default function NewPropertyPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                   </label>
                   <textarea
+                    id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Additional details about the property..."
@@ -163,10 +174,11 @@ export default function NewPropertyPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="purchase-price" className="block text-sm font-medium text-gray-700 mb-2">
                     Purchase Price (KES)
                   </label>
                   <input
+                    id="purchase-price"
                     type="number"
                     value={purchasePrice}
                     onChange={(e) => setPurchasePrice(e.target.value)}
@@ -177,10 +189,11 @@ export default function NewPropertyPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="purchase-date" className="block text-sm font-medium text-gray-700 mb-2">
                     Purchase Date
                   </label>
                   <input
+                    id="purchase-date"
                     type="date"
                     value={purchaseDate}
                     onChange={(e) => setPurchaseDate(e.target.value)}
