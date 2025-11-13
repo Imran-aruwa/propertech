@@ -1,17 +1,15 @@
 'use client'
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { propertiesAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
 import { Building2, ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createProperty } from '@/lib/api';
 
 interface Property {
   id: string;
   name: string;
   address: string;
   property_type: string;
-  units?: any[];
 }
 
 export default function NewPropertyPage() {
@@ -34,16 +32,33 @@ export default function NewPropertyPage() {
     setLoading(true);
 
     try {
+      // Get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        throw new Error('Not authenticated');
+      }
+
       const propertyData = {
+        user_id: session.user.id,
         name,
         address,
         property_type: propertyType,
-        description: description || undefined,
-        purchase_price: purchasePrice ? parseFloat(purchasePrice) : undefined,
-        purchase_date: purchaseDate || undefined,
+        description: description || null,
+        purchase_price: purchasePrice ? parseFloat(purchasePrice) : null,
+        purchase_date: purchaseDate || null,
       };
 
-      const newProperty = await createProperty(propertyData) as Property;
+      const { data: newProperty, error: insertError } = await supabase
+        .from('properties')
+        .insert([propertyData])
+        .select()
+        .single();
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+
       setSuccess(true);
       
       // Redirect to property detail page after 1 second

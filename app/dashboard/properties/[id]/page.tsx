@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { propertiesAPI } from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
 import { Building2, ArrowLeft, Plus, Home, Edit2, Trash2, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,8 +34,27 @@ export default function PropertyDetailPage() {
 
   const loadProperty = async () => {
     try {
-      const data = await propertiesAPI.get(propertyId);
-      setProperty(data);
+      const { data: propertyData, error: propError } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', propertyId)
+        .single();
+
+      if (propError) {
+        throw new Error(propError.message);
+      }
+
+      // Load units for this property
+      const { data: unitsData, error: unitsError } = await supabase
+        .from('units')
+        .select('*')
+        .eq('property_id', propertyId);
+
+      if (!unitsError) {
+        propertyData.units = unitsData || [];
+      }
+
+      setProperty(propertyData);
     } catch (err: any) {
       setError(err.message || 'Failed to load property');
     } finally {
@@ -50,15 +69,23 @@ export default function PropertyDetailPage() {
 
     try {
       const unitData = {
+        property_id: propertyId,
         unit_number: unitForm.unit_number,
-        bedrooms: unitForm.bedrooms ? parseInt(unitForm.bedrooms) : undefined,
-        bathrooms: unitForm.bathrooms ? parseFloat(unitForm.bathrooms) : undefined,
-        square_feet: unitForm.square_feet ? parseInt(unitForm.square_feet) : undefined,
-        monthly_rent: unitForm.monthly_rent ? parseFloat(unitForm.monthly_rent) : undefined,
+        bedrooms: unitForm.bedrooms ? parseInt(unitForm.bedrooms) : null,
+        bathrooms: unitForm.bathrooms ? parseFloat(unitForm.bathrooms) : null,
+        square_feet: unitForm.square_feet ? parseInt(unitForm.square_feet) : null,
+        monthly_rent: unitForm.monthly_rent ? parseFloat(unitForm.monthly_rent) : null,
         status: unitForm.status
       };
 
-      await propertiesAPI.createUnit(propertyId, unitData);
+      const { error: insertError } = await supabase
+        .from('units')
+        .insert([unitData]);
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+
       setUnitSuccess(true);
       
       // Reset form
@@ -98,7 +125,7 @@ export default function PropertyDetailPage() {
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Property Not Found</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error || 'Failed to fetch'}</p>
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
