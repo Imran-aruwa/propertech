@@ -1,31 +1,99 @@
 'use client'
+
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail, Sparkles, BarChart3, CheckCircle2, Shield, Zap, ArrowRight } from 'lucide-react'
+import { useAuth } from '@/app/lib/auth-context'
+import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 
 const featuresData = [
-  { key: 'portfolio', title: "Property Portfolio", description: "Centralized dashboard for all your properties. Track occupancy, manage units, and visualize your entire portfolio at a glance." },
-  { key: 'tenant', title: "Tenant Hub", description: "Digital tenant profiles, lease tracking, and automated renewals. Keep all tenant communication and documents in one place." },
-  { key: 'finance', title: "Financial Intelligence", description: "Real-time income tracking, expense management, and profitability analytics. Export reports for tax season in seconds." },
-  { key: 'maintenance', title: "Smart Maintenance", description: "AI-powered request categorization, vendor management, and automated workflows. Reduce response time by 60%." },
-  { key: 'insights', title: "Data Insights", description: "Predictive analytics for rent optimization, occupancy forecasting, and portfolio performance benchmarking." },
-  { key: 'ai', title: "AI Assistant", description: "Natural language queries, automated document parsing, and intelligent suggestions that learn from your workflow." },
+  { key: 'portfolio', title: 'Property Portfolio', description: 'Centralized dashboard for all your properties. Track occupancy, manage units, and visualize your entire portfolio at a glance.' },
+  { key: 'tenant', title: 'Tenant Hub', description: 'Digital tenant profiles, lease tracking, and automated renewals. Keep all tenant communication and documents in one place.' },
+  { key: 'finance', title: 'Financial Intelligence', description: 'Real-time income tracking, expense management, and profitability analytics. Export reports for tax season in seconds.' },
+  { key: 'maintenance', title: 'Smart Maintenance', description: 'AI-powered request categorization, vendor management, and automated workflows. Reduce response time by 60%.' },
+  { key: 'insights', title: 'Data Insights', description: 'Predictive analytics for rent optimization, occupancy forecasting, and portfolio performance benchmarking.' },
+  { key: 'ai', title: 'AI Assistant', description: 'Natural language queries, automated document parsing, and intelligent suggestions that learn from your workflow.' },
 ]
 
 const testimonials = [
-  { quote: "PROPERTECH Software reduced my admin time from 15 hours to 3 hours per week. Game changer.", author: "Kibera Landlord", role: "Property Owner, 12 units", avatar: "KL" },
-  { quote: "The AI maintenance categorization alone is worth the subscription. It just works.", author: "Nairobi PM", role: "Property Manager, 45 units", avatar: "NP" },
-  { quote: "Finally, software that doesn't feel like it was built in 2005. Clean, fast, intuitive.", author: "Mombasa Investor", role: "Real Estate Investor", avatar: "MI" },
+  { quote: 'PROPERTECH Software reduced my admin time from 15 hours to 3 hours per week. Game changer.', author: 'Kibera Landlord', role: 'Property Owner, 12 units', avatar: 'KL' },
+  { quote: 'The AI maintenance categorization alone is worth the subscription. It just works.', author: 'Nairobi PM', role: 'Property Manager, 45 units', avatar: 'NP' },
+  { quote: "Finally, software that doesn't feel like it was built in 2005. Clean, fast, intuitive.", author: 'Mombasa Investor', role: 'Real Estate Investor', avatar: 'MI' },
 ]
 
 const pricingPlans = [
-  { name: "Starter", usd: 49, label: "Up to 10 units", description: "Perfect for independent landlords", popular: false },
-  { name: "Professional", usd: 99, label: "Up to 50 units", description: "For growing property portfolios", popular: true },
-  { name: "Enterprise", usd: 0, label: "Unlimited units", description: "Custom for management firms", popular: false, custom: true },
+  {
+    name: 'Freemium',
+    usd: 0,
+    label: '7-day full access',
+    description: 'Try all features FREE',
+    popular: false,
+    features: [
+      '1 property',
+      'Up to 5 units',
+      'All core features',
+      'Email support',
+      '7-day trial period',
+    ],
+    cta: 'Start Free Trial',
+    badge: '🎁 FREE',
+  },
+  {
+    name: 'Starter',
+    usd: 49,
+    label: 'Up to 10 units',
+    description: 'Perfect for independent landlords',
+    popular: false,
+    features: [
+      'Up to 3 properties',
+      'Up to 10 units total',
+      'Tenant portal',
+      'Payment tracking',
+      'Basic maintenance',
+      'Email support',
+    ],
+    cta: 'Get Started',
+  },
+  {
+    name: 'Professional',
+    usd: 99,
+    label: 'Up to 50 units',
+    description: 'For growing property portfolios',
+    popular: true,
+    features: [
+      'Up to 10 properties',
+      'Up to 50 units total',
+      'All Starter features',
+      'Advanced analytics',
+      'Priority support',
+      'M-Pesa integration',
+    ],
+    cta: 'Get Started',
+    badge: '🔥 POPULAR',
+  },
+  {
+    name: 'Enterprise',
+    usd: 0,
+    label: 'Unlimited units',
+    description: 'Custom for management firms',
+    popular: false,
+    custom: true,
+    features: [
+      'Unlimited properties',
+      'Unlimited units',
+      'All Pro features',
+      'Custom integrations',
+      'Dedicated support',
+      'White-label option',
+    ],
+    cta: 'Contact Sales',
+    badge: '🏢 CUSTOM',
+  },
 ]
 
 export default function Page() {
   const router = useRouter()
+  const { isAuthenticated, role, user } = useAuth()
   const [email, setEmail] = useState('')
   const [waiting, setWaiting] = useState(false)
   const [waitSuccess, setWaitSuccess] = useState<string | null>(null)
@@ -33,6 +101,20 @@ export default function Page() {
   const [currency, setCurrency] = useState<'KES' | 'USD'>('KES')
 
   const USD_TO_KES = 132
+
+  useEffect(() => {
+    if (isAuthenticated && role && user) {
+      const roleRedirects: Record<string, string> = {
+        owner: '/owner',
+        tenant: '/tenant',
+        staff: '/staff',
+        caretaker: '/caretaker',
+        agent: '/agent',
+        admin: '/admin',
+      }
+      router.push(roleRedirects[role] || '/')
+    }
+  }, [isAuthenticated, role, user, router])
 
   async function handleWaitlist() {
     if (!email) return setWaitError('Please enter your email')
@@ -64,256 +146,268 @@ export default function Page() {
   }
 
   const formatPrice = (usd: number) => {
-    if (usd === 0) return 'Custom'
-    return currency === 'USD' ? `$${usd}` : `KES ${Math.round(usd * USD_TO_KES).toLocaleString()}`
+    if (usd === 0) return 'FREE'
+    return currency === 'USD'
+      ? `$${usd}`
+      : `KES ${Math.round(usd * USD_TO_KES).toLocaleString()}`
+  }
+
+  const handlePricingCTA = (plan: string) => {
+    if (plan === 'Enterprise') {
+      router.push('/contact')
+    } else {
+      router.push(`/register?plan=${plan.toLowerCase()}&role=owner`)
+    }
   }
 
   return (
-    <>
-      {/* Fixed Background Layers */}
-      <div className="fixed inset-0 -z-50 overflow-hidden">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-950 opacity-90"></div>
-        
-        {/* Animated Gradient Overlay */}
-        <div className="absolute inset-0 gradient-overlay-animated"></div>
-
-        {/* Skyline Layer */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 opacity-30 skyline-parallax"></div>
-
-        {/* Particle Field */}
-        <div className="absolute inset-0 particle-field"></div>
-
-        {/* Animated Orbs */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-500 rounded-full opacity-10 blur-3xl orb-blue"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500 rounded-full opacity-5 blur-3xl orb-purple"></div>
-      </div>
-
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+      {/* HEADER */}
       <header className="fixed top-0 left-0 right-0 z-40 header-backdrop bg-slate-900/50 border-b border-blue-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="PROPERTECH Software" className="w-10 h-10" />
-            <div className="text-2xl font-bold text-gradient">
-              PROPERTECH Software
-            </div>
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => router.push('/')}
+          >
+            <Image
+              src="/logo.svg"
+              alt="Propertech Software"
+              width={150}
+              height={40}
+              priority
+              className="h-12 w-auto"
+            />
           </div>
           <div className="flex gap-4">
-            <button onClick={() => router.push('/auth/login')} className="px-4 py-2 text-blue-300 hover:text-blue-200 transition">Login</button>
-            <button onClick={() => router.push('/auth/signup')} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">Sign Up</button>
+            <button
+              onClick={() => router.push('/login')}
+              className="text-blue-300 hover:text-blue-200 transition"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => router.push('/register')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Sign Up
+            </button>
           </div>
         </div>
       </header>
 
+      {/* MAIN */}
       <main className="pt-24 relative z-10">
-        {/* HERO */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-blue-400/50 card-backdrop animate-slide-in">
-              <Sparkles className="w-4 h-4" />
-              <span>AI-Powered Property Management — Beta</span>
-            </div>
-
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in-up delay-200">
-              Property Management <span className="block text-gradient">Reimagined</span>
+        {/* HERO WITH ROLE-SPECIFIC CTAS */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+              Property Management <span className="text-gradient">Reimagined</span>
             </h1>
 
-            <p className="text-lg text-blue-100 max-w-3xl mx-auto mb-8 animate-fade-in-up delay-400">
-              Stop chasing rent with spreadsheets and WhatsApp. PROPERTECH Software centralizes tenants, payments, maintenance and finances in one beautiful dashboard — built for landlords in Kenya & Africa.
+            <p className="max-w-2xl mx-auto text-lg text-blue-100 mb-8">
+              For modern landlords and field agents who want fewer spreadsheets and more control.
             </p>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-600">
-              <button onClick={() => router.push('/auth/signup')} className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition transform hover:scale-105 flex items-center justify-center gap-2">
-                Start Free 14-Day Trial <ArrowRight className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
+              <button
+                onClick={() => router.push('/register?plan=freemium&role=owner')}
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition transform hover:scale-105 inline-flex items-center gap-2"
+              >
+                I'm a Property Owner <ArrowRight className="w-4 h-4" />
               </button>
-              <button className="px-8 py-3 bg-white/10 text-white rounded-lg font-semibold hover:bg-white/20 transition card-backdrop border border-white/20">
-                Watch 2-Min Demo
+
+              <button
+                onClick={() => router.push('/register?plan=freemium&role=agent')}
+                className="px-8 py-3 bg-slate-800 text-blue-100 rounded-lg font-semibold border border-blue-500/40 hover:bg-slate-700 transition inline-flex items-center gap-2"
+              >
+                I'm a Letting / Sales Agent
               </button>
-            </div>
-
-            <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm text-blue-200">
-              <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-400" />No credit card</div>
-              <div className="flex items-center gap-2"><Shield className="w-5 h-5 text-blue-400" />Bank-level security</div>
-              <div className="flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-400" />Setup in 5 mins</div>
-            </div>
-          </div>
-
-          {/* Dashboard Preview */}
-          <div className="mt-16 max-w-6xl mx-auto animate-fade-in-up delay-800">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-blue-500/30 card-backdrop">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"></div>
-              <div className="relative bg-slate-800/50 p-6 md:p-10 rounded-2xl">
-                <div className="h-[380px] flex items-center justify-center text-center">
-                  <div>
-                    <BarChart3 className="w-12 h-12 text-blue-400 mx-auto mb-4 animate-float" />
-                    <div className="text-lg font-semibold text-blue-100 mb-1">Dashboard preview coming soon</div>
-                    <div className="text-blue-300/80">Real-time metrics • Occupancy • Revenue • Tickets</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* BENEFITS */}
-        <section className="py-12 bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-y border-blue-500/20 card-backdrop">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div className="animate-fade-in-up delay-0"><div className="text-4xl font-bold text-blue-400">10+</div><div className="text-blue-200 mt-1">Hours saved weekly</div></div>
-              <div className="animate-fade-in-up delay-100"><div className="text-4xl font-bold text-blue-400">50%</div><div className="text-blue-200 mt-1">Faster maintenance</div></div>
-              <div className="animate-fade-in-up delay-200"><div className="text-4xl font-bold text-blue-400">98%</div><div className="text-blue-200 mt-1">Payment on-time rate</div></div>
-              <div className="animate-fade-in-up delay-300"><div className="text-4xl font-bold text-blue-400">24/7</div><div className="text-blue-200 mt-1">Tenant self-service</div></div>
             </div>
           </div>
         </section>
 
         {/* FEATURES */}
-        <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center mb-12 animate-fade-in-up">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Everything You Need. <span className="text-gradient">Nothing You Don't.</span></h2>
-            <p className="text-blue-200 max-w-2xl mx-auto">Purpose-built features that actually solve real problems — no bloat, no complexity.</p>
-          </div>
-
-          <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuresData.map((f, i) => (
-              <div key={f.key} className="bg-slate-800/50 border border-blue-500/30 rounded-2xl p-6 hover:border-blue-400/70 hover:shadow-lg hover:shadow-blue-500/20 transition card-backdrop animate-fade-in-up group cursor-pointer" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-4 text-white font-semibold group-hover:animate-pulse-glow">{f.title.charAt(0)}</div>
-                <h3 className="font-semibold text-white mb-2 group-hover:text-blue-300 transition">{f.title}</h3>
-                <p className="text-blue-200/80">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* TESTIMONIALS */}
-        <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-blue-600/5 to-transparent">
-          <div className="max-w-7xl mx-auto text-center mb-12 animate-fade-in-up">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Loved by Property Managers</h2>
-            <p className="text-blue-200 max-w-2xl mx-auto">Join landlords and property managers who've transformed their workflow.</p>
-          </div>
-
-          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <div key={i} className="bg-slate-800/50 border border-blue-500/30 rounded-2xl p-6 hover:border-blue-400/70 card-backdrop hover:shadow-lg hover:shadow-blue-500/20 transition animate-fade-in-up" style={{ animationDelay: `${i * 0.2}s` }}>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">{t.avatar}</div>
-                  <div>
-                    <div className="font-semibold text-white">{t.author}</div>
-                    <div className="text-sm text-blue-300/70">{t.role}</div>
+        <section className="py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuresData.map(({ key, title, description }) => (
+                <div key={key} className="text-center group">
+                  <div className="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-500/40 transition">
+                    <span className="text-2xl font-bold text-blue-300">{key[0].toUpperCase()}</span>
                   </div>
+                  <h3 className="text-xl font-semibold mb-4">{title}</h3>
+                  <p className="text-blue-200">{description}</p>
                 </div>
-                <p className="text-blue-100 italic">"{t.quote}"</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         {/* PRICING */}
-        <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto text-center mb-8 animate-fade-in-up">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-blue-200 max-w-2xl mx-auto">14-day free trial • No credit card required • Cancel anytime</p>
-
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button onClick={() => setCurrency('KES')} className={`px-4 py-2 rounded-lg font-semibold transition ${currency === 'KES' ? 'bg-blue-600 text-white' : 'bg-slate-700/50 text-blue-200 hover:bg-slate-700'}`}>KES</button>
-              <button onClick={() => setCurrency('USD')} className={`px-4 py-2 rounded-lg font-semibold transition ${currency === 'USD' ? 'bg-blue-600 text-white' : 'bg-slate-700/50 text-blue-200 hover:bg-slate-700'}`}>USD</button>
+        <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+                Simple, Transparent <span className="text-gradient">Pricing</span>
+              </h2>
+              <div className="flex justify-center gap-2 mb-8">
+                <button
+                  onClick={() => setCurrency('USD')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    currency === 'USD'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-800 text-blue-200 hover:bg-slate-700'
+                  }`}
+                >
+                  USD
+                </button>
+                <button
+                  onClick={() => setCurrency('KES')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    currency === 'KES'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-slate-800 text-blue-200 hover:bg-slate-700'
+                  }`}
+                >
+                  KES
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
-            {pricingPlans.map((p, i) => (
-              <div key={i} className={`rounded-2xl p-6 card-backdrop transition animate-fade-in-up ${p.popular ? 'border-2 border-blue-500 shadow-2xl shadow-blue-500/30 bg-slate-800/80' : 'border border-blue-500/30 shadow-lg bg-slate-800/50'}`} style={{ animationDelay: `${i * 0.2}s` }}>
-                {p.popular && <div className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full mb-4 text-sm font-semibold">Most Popular</div>}
-                <h3 className="text-2xl font-semibold text-white">{p.name}</h3>
-                <div className="mt-4">
-                  <span className="text-5xl font-bold text-gradient">{p.custom ? 'Custom' : formatPrice(p.usd)}</span>
-                  {!p.custom && <span className="text-blue-300 ml-2 text-sm">/month</span>}
-                </div>
-                <p className="text-blue-200 mt-2">{p.description}</p>
-
-                <ul className="mt-4 space-y-2 text-blue-200">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-400" />{p.label}</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-400" />Tenant portal</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-green-400" />Maintenance requests</li>
-                </ul>
-
-                <div className="mt-6">
-                  <button onClick={() => router.push('/auth/signup')} className={`w-full py-3 rounded-lg font-semibold transition ${p.popular ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-lg hover:shadow-blue-500/50' : 'bg-slate-700/50 text-blue-200 hover:bg-slate-700'}`}>
-                    {p.custom ? 'Contact Sales' : 'Start Free Trial'}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {pricingPlans.map((p) => (
+                <div
+                  key={p.name}
+                  className={`relative rounded-3xl p-8 bg-slate-800/50 border-2 transition-all group hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 ${
+                    p.popular ? 'border-blue-500/50 bg-gradient-to-b from-blue-500/5 ring-2 ring-blue-500/30 scale-105' : 'border-slate-700/50'
+                  }`}
+                >
+                  {p.badge && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-slate-900 px-4 py-1 rounded-xl text-sm font-bold border border-slate-700">
+                      {p.badge}
+                    </div>
+                  )}
+                  
+                  <h3 className="text-2xl font-bold text-white mb-4">{p.name}</h3>
+                  
+                  <div className="mb-6">
+                    <div className="text-4xl lg:text-5xl font-bold text-white mb-2">
+                      {formatPrice(p.usd)}
+                    </div>
+                    <div className="text-blue-200 text-sm">{p.label}</div>
+                  </div>
+                  
+                  <p className="text-blue-100 mb-8">{p.description}</p>
+                  
+                  <ul className="space-y-3 mb-8">
+                    {p.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-3 text-blue-200">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <button
+                    onClick={() => handlePricingCTA(p.name)}
+                    className={`w-full py-4 px-6 rounded-xl font-semibold transition-all transform hover:scale-105 ${
+                      p.popular
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-blue-500/50 hover:from-blue-600 hover:to-purple-700'
+                        : p.custom
+                        ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white border border-slate-500 hover:from-slate-600 hover:to-slate-500'
+                        : 'bg-blue-600/80 text-white border border-blue-500/50 hover:bg-blue-700 hover:border-blue-400'
+                    }`}
+                  >
+                    {p.cta}
                   </button>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* WAITLIST CTA */}
-        <section id="waitlist" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 border-t border-b border-blue-500/30 card-backdrop">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-6 border border-blue-400/50 card-backdrop">
-              <Mail className="w-4 h-4" />
-              <span>Join landlords on the waitlist</span>
-            </div>
-
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Ready to Transform Your Property Management?</h2>
-            <p className="text-lg text-blue-200 max-w-2xl mx-auto mb-8">Start your 14-day free trial today. No credit card required. Get lifetime early-bird pricing at 50% off (first 100 signups).</p>
-
-            <div className="max-w-md mx-auto">
-              <div className="flex gap-3">
-                <input type="email" className="flex-1 px-4 py-3 rounded-lg bg-slate-800/70 border border-blue-500/30 text-white placeholder-blue-300/50 focus:outline-none focus:border-blue-400 card-backdrop" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <button onClick={handleWaitlist} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition disabled:opacity-50" disabled={waiting}>{waiting ? 'Joining…' : 'Get Started'}</button>
-              </div>
-
-              {waitSuccess && <div className="mt-4 text-green-400 text-sm">{waitSuccess}</div>}
-              {waitError && <div className="mt-4 text-red-400 text-sm">{waitError}</div>}
-
-              <p className="text-blue-200 text-sm mt-6">🎉 <strong>Limited Offer:</strong> First 100 signups get 50% off forever</p>
+              ))}
             </div>
           </div>
         </section>
+
+        {/* TESTIMONIALS */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-16">What Landlords Are Saying</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {testimonials.map(({ quote, author, role, avatar }, i) => (
+                <div key={i} className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700/50 hover:border-blue-500/50 transition">
+                  <p className="text-blue-100 mb-6 italic">"{quote}"</p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-xl font-bold text-white">
+                      {avatar}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">{author}</div>
+                      <div className="text-blue-300 text-sm">{role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* WAITLIST */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/50">
+          <div className="max-w-md mx-auto text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-6">Ready to Transform Your Portfolio?</h2>
+            <p className="text-blue-200 mb-8 text-lg">Join 500+ landlords already saving 12+ hours per week</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-6 py-4 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-blue-300 focus:border-blue-500 focus:outline-none transition"
+                disabled={waiting}
+              />
+              <button
+                onClick={handleWaitlist}
+                disabled={waiting}
+                className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/50 transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {waiting ? 'Joining...' : 'Join Waitlist'}
+              </button>
+            </div>
+            {waitSuccess && (
+              <p className="mt-4 text-green-400 text-sm font-medium">{waitSuccess}</p>
+            )}
+            {waitError && (
+              <p className="mt-4 text-red-400 text-sm font-medium">{waitError}</p>
+            )}
+          </div>
+        </section>
+        
+        {/* FOOTER */}
+        <footer className="border-t border-slate-800/60 bg-slate-950">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-blue-200">
+            <p className="text-xs text-blue-400">
+              © {new Date().getFullYear()} PROPERTECH SOFTWARE. All rights reserved.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push('/privacy')}
+                className="hover:text-white transition"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onClick={() => router.push('/terms')}
+                className="hover:text-white transition"
+              >
+                Terms
+              </button>
+              <button
+                onClick={() => router.push('/cookies')}
+                className="hover:text-white transition"
+              >
+                Cookie Policy
+              </button>
+            </div>
+          </div>
+        </footer>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-slate-900/80 border-t border-blue-500/20 card-backdrop py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <img src="/logo.svg" alt="PROPERTECH Software" className="w-8 h-8" />
-                <span className="text-xl font-bold text-gradient">PROPERTECH Software</span>
-              </div>
-              <p className="text-blue-200/70 text-sm">Smarter property management for landlords across Africa.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-2 text-blue-200/70 text-sm">
-                <li><button onClick={() => document.getElementById('features')?.scrollIntoView({behavior: 'smooth'})} className="hover:text-blue-300 transition">Features</button></li>
-                <li><button onClick={() => document.getElementById('pricing')?.scrollIntoView({behavior: 'smooth'})} className="hover:text-blue-300 transition">Pricing</button></li>
-                <li><button className="hover:text-blue-300 transition">Security</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-blue-200/70 text-sm">
-                <li><button className="hover:text-blue-300 transition">About</button></li>
-                <li><button className="hover:text-blue-300 transition">Blog</button></li>
-                <li><button className="hover:text-blue-300 transition">Contact</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-2 text-blue-200/70 text-sm">
-                <li><button className="hover:text-blue-300 transition">Privacy</button></li>
-                <li><button className="hover:text-blue-300 transition">Terms</button></li>
-                <li><button className="hover:text-blue-300 transition">Cookie Policy</button></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-blue-500/20 pt-8 text-center text-blue-200/50 text-sm">
-            <p>&copy; 2025 PROPERTECH Software. All rights reserved. Built for Africa, by Africans.</p>
-          </div>
-        </div>
-      </footer>
-    </>
+    </div>
   )
 }

@@ -1,15 +1,11 @@
 // app/api/waitlist/route.ts
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('Missing SUPABASE env vars for waitlist route');
+if (!API_URL) {
+  console.error('Missing API_URL env var for waitlist route');
 }
-
-const supabaseServer = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 export async function POST(req: Request) {
   try {
@@ -20,29 +16,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Check duplicate
-    const { data: existing, error: selErr } = await supabaseServer
-      .from('waitlist')
-      .select('email')
-      .eq('email', email)
-      .maybeSingle();
+    // Call FastAPI backend to add to waitlist
+    const response = await fetch(`${API_URL}/api/waitlist/subscribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
 
-    if (selErr) {
-      console.error('Supabase select error', selErr);
-      // continue to attempt insert anyway
-    }
+    const data = await response.json();
 
-    if (existing) {
-      return NextResponse.json({ message: "You're already on the waitlist" }, { status: 200 });
-    }
-
-    const { error: insertErr } = await supabaseServer
-      .from('waitlist')
-      .insert({ email });
-
-    if (insertErr) {
-      console.error('Supabase insert error', insertErr);
-      return NextResponse.json({ error: 'Database error' }, { status: 500 });
+    if (!response.ok) {
+      if (response.status === 400 && data.detail === 'Email already subscribed') {
+        return NextResponse.json({ message: "You're already on the waitlist" }, { status: 200 });
+      }
+      return NextResponse.json({ error: data.detail || 'Error adding to waitlist' }, { status: response.status });
     }
 
     return NextResponse.json({ ok: true, message: "You're in! We'll email you soon." }, { status: 200 });

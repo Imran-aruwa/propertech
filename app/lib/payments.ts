@@ -1,48 +1,47 @@
 /**
- * PROPERTECH Payment Functions
- * Integrates with Supabase + Paystack + Flutterwave
+ * PROPERTECH Payment Functions - Paystack Only
+ * Simplified payment integration
  */
 
-import { supabase } from '@/lib/supabaseClient';
-import type { Database } from '@/lib/databaseTypes';
+import type { Database } from '@/app/lib/databaseTypes';
 
 type Payment = Database['public']['Tables']['payments']['Row'];
 type Subscription = Database['public']['Tables']['subscriptions']['Row'];
 type User = Database['public']['Tables']['users']['Row'];
 
 export interface PaymentConfig {
-  gateway: 'paystack' | 'flutterwave';
   currency: string;
   method: string;
   amount: number;
   email: string;
-  phoneNumber?: string;
-  name?: string;
   planId?: string;
+  countryCode?: string;
+  ipAddress?: string;
+  description?: string;
 }
 
 export interface PaymentResponse {
   success: boolean;
-  paymentId: string;
+  payment_id: string;
   reference: string;
-  authorizationUrl?: string;
+  authorization_url?: string;
   gateway: string;
   amount: number;
   currency: string;
-  message?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
 /**
  * Get JWT token for backend API calls
  */
-async function getAuthToken(): Promise<string | null> {
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token || null;
+    return localStorage.getItem('access_token');
   } catch (error) {
     console.error('Error getting auth token:', error);
     return null;
@@ -56,7 +55,7 @@ async function apiCall<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = await getAuthToken();
+  const token = getAuthToken();
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -82,24 +81,8 @@ async function apiCall<T>(
  */
 export async function getCurrentPaymentUser(): Promise<User | null> {
   try {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-
-    if (!authUser) return null;
-
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', authUser.id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user profile:', error);
-      return null;
-    }
-
-    return data as User;
+    const data = await apiCall<User>('/api/users/profile');
+    return data;
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
@@ -107,38 +90,7 @@ export async function getCurrentPaymentUser(): Promise<User | null> {
 }
 
 /**
- * Auto-detect payment gateway based on user location
- */
-export async function detectPaymentGateway(): Promise<{
-  gateway: 'paystack' | 'flutterwave';
-  currency: string;
-  method: string;
-  country_code: string;
-}> {
-  try {
-    const data = await apiCall<any>('/api/payments/detect-gateway', {
-      method: 'POST',
-    });
-
-    return data.data || {
-      gateway: 'paystack',
-      currency: 'KES',
-      method: 'mpesa',
-      country_code: 'KE',
-    };
-  } catch (error) {
-    console.error('Gateway detection error:', error);
-    return {
-      gateway: 'paystack',
-      currency: 'KES',
-      method: 'mpesa',
-      country_code: 'KE',
-    };
-  }
-}
-
-/**
- * Initiate payment transaction
+ * Initiate payment transaction with Paystack
  */
 export async function initiatePayment(
   config: PaymentConfig
@@ -151,11 +103,13 @@ export async function initiatePayment(
       method: 'POST',
       body: JSON.stringify({
         amount: config.amount,
-        currency: config.currency,
-        gateway: config.gateway,
-        method: config.method,
+        currency: config.currency || 'KES',
+        gateway: 'paystack',
+        method: config.method || 'card',
         plan_id: config.planId,
-        description: `Payment for ${config.planId}`,
+        country_code: config.countryCode || 'KE',
+        ip_address: config.ipAddress,
+        description: config.description || `Payment for ${config.planId}`,
       }),
     });
 
@@ -184,26 +138,12 @@ export async function verifyPayment(reference: string): Promise<any> {
 }
 
 /**
- * Get user's payment history from Supabase
+ * Get user's payment history
  */
 export async function getPaymentHistory(limit: number = 10): Promise<Payment[]> {
   try {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-
-    if (!authUser) throw new Error('User not authenticated');
-
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-
-    return (data as Payment[]) || [];
+    const data = await apiCall<Payment[]>(`/api/payments/history?limit=${limit}`);
+    return data || [];
   } catch (error) {
     console.error('Error fetching payment history:', error);
     return [];
@@ -215,21 +155,8 @@ export async function getPaymentHistory(limit: number = 10): Promise<Payment[]> 
  */
 export async function getActiveSubscriptions(): Promise<Subscription[]> {
   try {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-
-    if (!authUser) throw new Error('User not authenticated');
-
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .eq('status', 'active');
-
-    if (error) throw error;
-
-    return (data as Subscription[]) || [];
+    const data = await apiCall<Subscription[]>('/api/payments/subscriptions');
+    return data || [];
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
     return [];
@@ -293,26 +220,6 @@ export function loadPaystackScript(): Promise<void> {
 }
 
 /**
- * Load Flutterwave script
- */
-export function loadFlutterwaveScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if ((window as any).FlutterwaveCheckout) {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://checkout.flutterwave.com/v3.js';
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new Error('Failed to load Flutterwave script'));
-    document.body.appendChild(script);
-  });
-}
-
-/**
  * Format currency for display
  */
 export function formatCurrency(
@@ -330,79 +237,11 @@ export function formatCurrency(
  */
 export function getPaymentMethodName(method: string): string {
   const methods: Record<string, string> = {
-    mpesa: 'M-Pesa',
-    kes_card: 'KES Card',
-    usd_card: 'USD Card',
+    card: 'Card Payment',
+    bank: 'Bank Transfer',
+    ussd: 'USSD',
     apple_pay: 'Apple Pay',
     google_pay: 'Google Pay',
   };
   return methods[method] || method;
-}
-
-/**
- * Get gateway display name
- */
-export function getGatewayName(gateway: string): string {
-  const gateways: Record<string, string> = {
-    paystack: 'Paystack',
-    flutterwave: 'Flutterwave',
-  };
-  return gateways[gateway] || gateway;
-}
-
-/**
- * Update user payment preferences
- */
-export async function updatePaymentPreferences(
-  preferences: Partial<
-    Database['public']['Tables']['user_preferences']['Insert']
-  >
-): Promise<boolean> {
-  try {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-
-    if (!authUser) throw new Error('User not authenticated');
-
-    const { error } = await supabase
-      .from('user_preferences')
-      .update(preferences)
-      .eq('user_id', authUser.id);
-
-    if (error) throw error;
-
-    return true;
-  } catch (error) {
-    console.error('Error updating preferences:', error);
-    return false;
-  }
-}
-
-/**
- * Get user payment preferences
- */
-export async function getPaymentPreferences(): Promise<
-  Database['public']['Tables']['user_preferences']['Row'] | null
-> {
-  try {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-
-    if (!authUser) throw new Error('User not authenticated');
-
-    const { data, error } = await supabase
-      .from('user_preferences')
-      .select('*')
-      .eq('user_id', authUser.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error;
-
-    return (data as any) || null;
-  } catch (error) {
-    console.error('Error fetching preferences:', error);
-    return null;
-  }
 }

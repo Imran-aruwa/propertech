@@ -78,7 +78,7 @@ export default function LogoutPage() {
         {/* PROPERTECH Branding */}
         <div className="pt-8 border-t border-white/20">
           <div className="inline-block bg-white/10 backdrop-blur-sm rounded-2xl px-8 py-4 space-y-2">
-            <p className="text-3xl font-bold text-white tracking-tight">PROPERTECH</p>
+            <p className="text-3xl font-bold text-white tracking-tight">PROPERTECH SOFTWARE</p>
             <p className="text-sm text-blue-100 font-medium">Property Management Made Simple</p>
           </div>
         </div>
@@ -121,3 +121,5 @@ export default function LogoutPage() {
     </div>
   );
 }
+
+

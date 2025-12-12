@@ -226,3 +226,15 @@ body {
 .orb-purple {
   animation: float 8s ease-in-out infinite 1s;
 }
+/* Add this to your existing globals.css at the end */
+
+/* Card Backdrop Effect */
+.card-backdrop {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.header-backdrop {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
