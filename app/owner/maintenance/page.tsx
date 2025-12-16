@@ -28,6 +28,7 @@ export default function OwnerMaintenancePage() {
     if (session?.user) {
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user]);
 
   const fetchData = async () => {

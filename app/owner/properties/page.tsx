@@ -28,6 +28,7 @@ export default function PropertiesPage() {
     if (isAuthenticated && role === 'owner') {
       fetchProperties();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, role]);
 
   const fetchProperties = async () => {

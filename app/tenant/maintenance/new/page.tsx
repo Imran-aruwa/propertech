@@ -26,6 +26,7 @@ export default function NewMaintenanceRequestPage() {
 
   useEffect(() => {
     fetchTenantInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTenantInfo = async () => {

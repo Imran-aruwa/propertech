@@ -23,6 +23,7 @@ export default function OwnerTenantsPage() {
     if (session?.user && (session.user as any)?.role === 'owner') {
       fetchTenants();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user]);
 
   const fetchTenants = async () => {

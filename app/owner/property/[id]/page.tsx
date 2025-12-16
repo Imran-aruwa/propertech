@@ -39,6 +39,7 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     fetchPropertyData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId]);
 
   const fetchPropertyData = async () => {

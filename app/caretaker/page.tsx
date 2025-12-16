@@ -28,6 +28,7 @@ export default function CaretakerDashboard() {
     if (session?.user) {
       fetchDashboardData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user]);
 
   const fetchDashboardData = async () => {

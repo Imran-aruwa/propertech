@@ -31,6 +31,7 @@ export default function OwnerUnitsPage() {
     if (isAuthenticated && role === 'owner') {
       fetchData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, role]);
 
   const fetchData = async () => {

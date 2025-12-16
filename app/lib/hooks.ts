@@ -22,6 +22,7 @@ export function useFetch<T>(
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher, ...dependencies]);
 
   useEffect(() => {

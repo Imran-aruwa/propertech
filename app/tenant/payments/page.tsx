@@ -28,6 +28,7 @@ export default function TenantPaymentsPage() {
       setEmail((session.user as any)?.email || '');
       fetchPayments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user]);
 
   const fetchPayments = async () => {
