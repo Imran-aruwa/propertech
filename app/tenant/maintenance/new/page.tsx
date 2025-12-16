@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { maintenanceApi, tenantsApi } from '@/lib/api-services';
@@ -24,12 +24,7 @@ export default function NewMaintenanceRequestPage() {
   const [tenantInfo, setTenantInfo] = useState<any>(null);
   const [loadingTenant, setLoadingTenant] = useState(true);
 
-  useEffect(() => {
-    fetchTenantInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchTenantInfo = async () => {
+  const fetchTenantInfo = useCallback(async () => {
     try {
       setLoadingTenant(true);
       const response = await tenantsApi.getAll();
@@ -45,7 +40,11 @@ export default function NewMaintenanceRequestPage() {
     } finally {
       setLoadingTenant(false);
     }
-  };
+  }, [session?.user, showError]);
+
+  useEffect(() => {
+    fetchTenantInfo();
+  }, [fetchTenantInfo]);
 
   const validateForm = (values: MaintenanceFormData) => {
     const errors: Partial<Record<keyof MaintenanceFormData, string>> = {};

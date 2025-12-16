@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/lib/auth-context';
 import { propertiesApi } from '@/lib/api-services';
@@ -24,24 +24,23 @@ export default function PropertiesPage() {
   });
   const [deleting, setDeleting] = useState(false);
 
+  const fetchProperties = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await propertiesApi.getAll();
+      setProperties(response.data || []);
+    } catch (err: any) {
+      showError(err.message || 'Failed to load properties');
+    } finally {
+      setLoading(false);
+    }
+  }, [showError]);
+
   useEffect(() => {
     if (isAuthenticated && role === 'owner') {
       fetchProperties();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, role]);
-
-  const fetchProperties = async () => {
-  try {
-    setLoading(true);
-    const response = await propertiesApi.getAll();
-    setProperties(response.data || []);
-  } catch (err: any) {
-    showError(err.message || 'Failed to load properties');
-  } finally {
-    setLoading(false);
-  }
-};
+  }, [isAuthenticated, role, fetchProperties]);
 
   const handleDelete = async () => {
     if (!deleteModal.propertyId) return;

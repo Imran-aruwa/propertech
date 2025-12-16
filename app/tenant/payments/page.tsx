@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { paymentsApi } from '@/app/lib/api-services';
 import { paystackService } from '@/app/lib/paystack-services';
@@ -23,15 +23,7 @@ export default function TenantPaymentsPage() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [email, setEmail] = useState((session?.user as any)?.email || '');
 
-  useEffect(() => {
-    if (session?.user) {
-      setEmail((session.user as any)?.email || '');
-      fetchPayments();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
       const data = await paymentsApi.getAll();
@@ -41,7 +33,14 @@ export default function TenantPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (session?.user) {
+      setEmail((session.user as any)?.email || '');
+      fetchPayments();
+    }
+  }, [session?.user, fetchPayments]);
 
   const handlePaystackPayment = async () => {
     if (!paymentModal.payment) return;

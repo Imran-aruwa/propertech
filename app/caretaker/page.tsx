@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { maintenanceApi, propertiesApi } from '@/lib/api-services';
 import { useToast } from '@/app/lib/hooks';
@@ -24,14 +24,7 @@ export default function CaretakerDashboard() {
   const [maintenanceRequests, setMaintenanceRequests] = useState<any[]>([]);
   const [dailyTasks, setDailyTasks] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchDashboardData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       const [propertiesData, maintenanceData] = await Promise.all([
@@ -72,7 +65,13 @@ export default function CaretakerDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchDashboardData();
+    }
+  }, [session?.user, fetchDashboardData]);
 
   if (authLoading || loading) {
     return (

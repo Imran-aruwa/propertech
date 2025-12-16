@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { maintenanceApi, staffApi } from '@/lib/api-services';
 import { useToast } from '@/app/lib/hooks';
@@ -24,14 +24,7 @@ export default function OwnerMaintenancePage() {
   const [selectedStaff, setSelectedStaff] = useState<number | null>(null);
   const [assigning, setAssigning] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [requestsData, staffData] = await Promise.all([
@@ -45,7 +38,13 @@ export default function OwnerMaintenancePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchData();
+    }
+  }, [session?.user, fetchData]);
 
   const handleAssignStaff = async () => {
     if (!assignModal.requestId || !selectedStaff) return;

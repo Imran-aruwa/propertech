@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/lib/auth-context';
 import { unitsApi, propertiesApi } from '@/lib/api-services';
@@ -27,14 +27,7 @@ export default function OwnerUnitsPage() {
   });
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && role === 'owner') {
-      fetchData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, role]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [unitsResponse, propertiesResponse] = await Promise.all([
@@ -48,7 +41,13 @@ export default function OwnerUnitsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (isAuthenticated && role === 'owner') {
+      fetchData();
+    }
+  }, [isAuthenticated, role, fetchData]);
 
   const handleDelete = async () => {
     if (!deleteModal.unitId) return;

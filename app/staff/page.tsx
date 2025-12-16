@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { staffApi, maintenanceApi } from '@/lib/api-services';
 import { useToast } from '@/app/lib/hooks';
@@ -20,17 +20,10 @@ export default function StaffDashboard() {
   const [checkingIn, setCheckingIn] = useState(false);
   const authLoading = status === 'loading';
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchDashboardData();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       const [staffDataResponse, maintenanceDataResponse] = await Promise.all([
         staffApi.getAll(),
         maintenanceApi.getAll()
@@ -42,18 +35,18 @@ export default function StaffDashboard() {
       const currentStaff = staffData.find((s: any) => s.user_id === (session?.user as any)?.id);
       if (currentStaff) {
         setStaffInfo(currentStaff);
-        
+
         const assignedTasks = maintenanceData.filter(
           (m: any) => m.assigned_to === currentStaff.id && m.status !== 'completed'
         );
         setTasks(assignedTasks);
 
         const today = new Date().toISOString().split('T')[0];
-        
+
         // Assuming attendance data is available on the staff object or fetch from all staff
         const attendanceData = currentStaff.attendance || [];
         setAttendance(attendanceData);
-        
+
         const checkedInToday = attendanceData.some(
           (a: any) => a.date.startsWith(today) && a.check_in
         );
@@ -64,7 +57,13 @@ export default function StaffDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user]);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchDashboardData();
+    }
+  }, [session?.user, fetchDashboardData]);
 
   const handleCheckIn = async () => {
     if (!staffInfo) return;

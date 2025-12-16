@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { tenantsApi } from '@/lib/api-services';
@@ -19,14 +19,7 @@ export default function OwnerTenantsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (session?.user && (session.user as any)?.role === 'owner') {
-      fetchTenants();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
-
-  const fetchTenants = async () => {
+  const fetchTenants = useCallback(async () => {
     try {
       setLoading(true);
       const response = await tenantsApi.getAll();
@@ -36,7 +29,13 @@ export default function OwnerTenantsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (session?.user && (session.user as any)?.role === 'owner') {
+      fetchTenants();
+    }
+  }, [session?.user, fetchTenants]);
 
   const filteredTenants = tenants.filter(tenant => {
     const searchLower = searchTerm.toLowerCase();

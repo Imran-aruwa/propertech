@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Building2, Users, TrendingUp, AlertCircle, Download } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
@@ -37,12 +37,7 @@ export default function PropertyDetailPage() {
   });
   const [units, setUnits] = useState<Unit[]>([]);
 
-  useEffect(() => {
-    fetchPropertyData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [propertyId]);
-
-  const fetchPropertyData = async () => {
+  const fetchPropertyData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.get(`/owner/property/${propertyId}`);
@@ -86,7 +81,11 @@ export default function PropertyDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [propertyId]);
+
+  useEffect(() => {
+    fetchPropertyData();
+  }, [fetchPropertyData]);
 
   const formatCurrency = (value: number) => {
     return `KES ${value.toLocaleString()}`;
