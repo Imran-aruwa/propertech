@@ -6,7 +6,8 @@
       "Bash(timeout:*)",
       "Bash(git fetch:*)",
       "Bash(cat:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
