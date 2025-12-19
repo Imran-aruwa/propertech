@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { Property } from '@/app/lib/types';
 
 export default function PropertiesPage() {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { toasts, success, error: showError, removeToast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -28,26 +28,73 @@ export default function PropertiesPage() {
     try {
       setLoading(true);
       const response = await propertiesApi.getAll();
+      
+      // Handle unauthorized/authentication errors
+      if (!response.success) {
+        const errorMsg = response.error || '';
+        
+        // Check for authentication errors
+        if (errorMsg.includes('Unauthorized') || errorMsg.includes('401') || errorMsg.includes('token')) {
+          console.error('Authentication error - redirecting to login');
+          showError('Please log in to view properties');
+          router.push('/login');
+          return; // STOP - don't continue or retry
+        }
+        
+        // Other errors - show message but don't retry
+        showError(errorMsg || 'Failed to load properties');
+        setProperties([]); // Set empty array to stop loading state
+        return; // STOP - don't retry
+      }
+      
+      // Success - set the properties
       setProperties(response.data || []);
     } catch (err: any) {
+      console.error('Error fetching properties:', err);
       showError(err.message || 'Failed to load properties');
+      setProperties([]); // Set empty array to stop loading state
+      // Don't throw - just stop here
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, router]);
 
   useEffect(() => {
+    // Wait for auth to load first
+    if (authLoading) {
+      return;
+    }
+
+    // Redirect if not authenticated
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    // Redirect if not owner
+    if (role && role !== 'owner') {
+      router.push('/unauthorized');
+      return;
+    }
+
+    // Only fetch if authenticated and owner
     if (isAuthenticated && role === 'owner') {
       fetchProperties();
     }
-  }, [isAuthenticated, role, fetchProperties]);
+  }, [isAuthenticated, role, authLoading, fetchProperties, router]);
 
   const handleDelete = async () => {
     if (!deleteModal.propertyId) return;
 
     try {
       setDeleting(true);
-      await propertiesApi.delete(deleteModal.propertyId.toString());
+      const response = await propertiesApi.delete(deleteModal.propertyId.toString());
+      
+      if (!response.success) {
+        showError(response.error || 'Failed to delete property');
+        return;
+      }
+      
       success('Property deleted successfully');
       setProperties(properties.filter(p => p.id !== deleteModal.propertyId));
       setDeleteModal({ isOpen: false, propertyId: null });
@@ -58,7 +105,8 @@ export default function PropertiesPage() {
     }
   };
 
-  if (loading) {
+  // Show loading while checking auth
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="max-w-7xl mx-auto">

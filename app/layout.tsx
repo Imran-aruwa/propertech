@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description:
       'Smarter property management, anywhere. Manage properties, tenants, payments, and maintenance with ease.',
     url: 'https://propertechsoftware.co.ke',
-    siteName: 'ProperTech Software',
+    siteName: 'Propertech Software',
     images: ['/og-image.png'], // ✅ place this in /public later
     type: 'website',
   },
