@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.propertechsoftware.com';
 
+// Tell Next.js this route is dynamic and should not be statically generated
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
@@ -13,7 +16,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${BACKEND_URL}/auth/me`, {
+    const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
