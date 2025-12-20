@@ -60,7 +60,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_your_test_key_here
 
 # Database (for production)
-DATABASE_URL="postgresql://user:password@localhost:5432/propertytech"
+DATABASE_URL="postgresql://user:password@localhost:5432/propertech"
 
 # NextAuth (generate with: openssl rand -base64 32)
 NEXTAUTH_URL="http://localhost:3000"
@@ -81,7 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 📁 Project Structure
 
 ```
-propertytech/
+propertech/
 ├── app/                          # Next.js 14 App Router
 │   ├── owner/                   # Owner portal pages
 │   ├── agent/                   # Agent portal pages

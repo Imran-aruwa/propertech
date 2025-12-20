@@ -1,4 +1,4 @@
-// Paystack Payment Service for PropertyTech
+// Paystack Payment Service for Propertech
 
 export interface PaystackConfig {
   publicKey: string;

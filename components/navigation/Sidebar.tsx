@@ -108,7 +108,7 @@ export function Sidebar() {
           {!collapsed && (
             <div className="flex items-center gap-2">
               <Building2 className="w-8 h-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">PropertyTech</span>
+              <span className="text-xl font-bold text-gray-900">Propertech</span>
             </div>
           )}
           <button

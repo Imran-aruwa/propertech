@@ -1,7 +1,7 @@
-# PropertyTech Frontend File Verification Script
+# Propertech Frontend File Verification Script
 # Run this in your project root directory
 
-Write-Host "=== PropertyTech Frontend File Verification ===" -ForegroundColor Cyan
+Write-Host "=== Propertech Frontend File Verification ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Define expected file structure based on the dashboard specs

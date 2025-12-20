@@ -1,37 +1,30 @@
-// ============================================
-// FILE: app/api/auth/signup/route.ts (FIXED - Backend Proxy)
-// ============================================
 import { NextRequest, NextResponse } from 'next/server';
 
-// Backend FastAPI URL
 const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, fullName, role } = await request.json();
+    const body = await request.json();
+    const { email, password, full_name, role, phone } = body;
 
     // Validate input
-    if (!email || !password || !fullName || !role) {
+    if (!email || !password || !full_name || !role) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Only OWNER and AGENT can sign up directly
-    if (role !== 'OWNER' && role !== 'AGENT') {
-      return NextResponse.json(
-        { error: 'Only Property Owners and Agents can sign up directly' },
-        { status: 400 }
-      );
-    }
+    // Transform role to uppercase for backend
+    const backendData = {
+      email,
+      password,
+      full_name,
+      role: role.toUpperCase(), // Convert 'owner' -> 'OWNER', 'agent' -> 'AGENT'
+      ...(phone && { phone }),
+    };
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
-        { status: 400 }
-      );
-    }
+    console.log('Sending to backend:', { ...backendData, password: '[HIDDEN]' });
 
     // Proxy request to FastAPI backend
     const backendResponse = await fetch(`${BACKEND_URL}/auth/signup`, {
@@ -39,33 +32,25 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email,
-        password,
-        fullName,
-        role,
-      }),
+      body: JSON.stringify(backendData),
     });
 
-    const backendData = await backendResponse.json();
+    const responseData = await backendResponse.json();
+
+    console.log('Backend response:', backendResponse.status, responseData);
 
     // Forward backend response status and data
     if (!backendResponse.ok) {
       return NextResponse.json(
-        { error: backendData.error || 'Signup failed' },
+        { error: responseData.error || responseData.detail || 'Signup failed' },
         { status: backendResponse.status }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: backendData.message || 'Account created successfully',
-      user: backendData.user || {
-        id: backendData.id,
-        email: backendData.email,
-        name: backendData.fullName || backendData.name,
-        role: backendData.role,
-      },
+      message: responseData.message || 'Account created successfully',
+      user: responseData,
     }, { status: 201 });
 
   } catch (error: any) {
