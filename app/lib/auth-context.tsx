@@ -77,14 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Backend returns user data at root level, not nested under 'user'
       const { access_token, user_id, email: userEmail, full_name, role: userRole } = response.data;
-      
-      // Construct user object from response
+
+      // Construct user object from response (safe toLowerCase with fallback)
       const userData = {
         id: user_id,
         email: userEmail,
         full_name: full_name,
         phone: null,
-        role: userRole.toLowerCase(),
+        role: (userRole || 'owner').toLowerCase(),
         is_active: true,
         created_at: new Date().toISOString()
       };
@@ -126,14 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Backend returns user data at root level
       const { id, email: userEmail, full_name, role: userRole } = response.data;
-      
-      // Construct user object
+
+      // Construct user object (safe toLowerCase with fallback)
       const userData = {
         id: id,
         email: userEmail,
         full_name: full_name,
         phone: data.phone || null,
-        role: userRole.toLowerCase(),
+        role: (userRole || 'owner').toLowerCase(),
         is_active: true,
         created_at: new Date().toISOString()
       };
