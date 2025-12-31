@@ -31,12 +31,19 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock localStorage
+// Mock localStorage with actual storage behavior
+const localStorageStore = {};
 const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: jest.fn((key) => localStorageStore[key] || null),
+  setItem: jest.fn((key, value) => {
+    localStorageStore[key] = value;
+  }),
+  removeItem: jest.fn((key) => {
+    delete localStorageStore[key];
+  }),
+  clear: jest.fn(() => {
+    Object.keys(localStorageStore).forEach(key => delete localStorageStore[key]);
+  }),
 };
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
