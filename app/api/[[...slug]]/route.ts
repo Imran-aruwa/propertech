@@ -41,8 +41,6 @@ async function proxyRequest(request: NextRequest, method: string) {
     // Build the backend URL
     const backendUrl = `${BACKEND_URL}${path}${url.search}`;
 
-    console.log(`[API Proxy] ${method} ${path} -> ${backendUrl}`);
-
     // Get headers
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

@@ -40,7 +40,6 @@ export default function OwnerDashboard() {
           ? propertiesData.data
           : [];
         setProperties(propsArray);
-        console.log('Properties loaded:', propsArray.length);
       } else {
         console.error('Properties error:', propertiesData.error);
         setProperties([]);

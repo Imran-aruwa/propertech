@@ -11,7 +11,11 @@
       "Bash(npm run dev:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4OWJjZTg4Yi1mOTZhLTQyZDgtOTU4YS0yZDhkNTZmMTA2YWUiLCJ1c2VyX2lkIjoiODliY2U4OGItZjk2YS00MmQ4LTk1OGEtMmQ4ZDU2ZjEwNmFlIiwiZW1haWwiOiJ0ZXN0b3duZXJAdGVzdC5jb20iLCJyb2xlIjoib3duZXIiLCJleHAiOjE3Njc3ODM3Njl9._xOosKkccC_EEWE0pwexBae6E1maWS3EpJmWbRQIvF4\")",
+      "Bash(npm test)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

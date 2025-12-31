@@ -24,8 +24,6 @@ export async function POST(request: NextRequest) {
       ...(phone && { phone }),
     };
 
-    console.log('Sending to backend:', { ...backendData, password: '[HIDDEN]' });
-
     // Proxy request to FastAPI backend
     const backendResponse = await fetch(`${BACKEND_URL}/auth/signup`, {
       method: 'POST',
@@ -36,8 +34,6 @@ export async function POST(request: NextRequest) {
     });
 
     const responseData = await backendResponse.json();
-
-    console.log('Backend response:', backendResponse.status, responseData);
 
     // Forward backend response status and data
     if (!backendResponse.ok) {

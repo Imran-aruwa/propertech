@@ -5,9 +5,6 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.propertechso
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    console.log('Login request received:', { email: body.email });
-    console.log('Backend URL:', BACKEND_URL);
 
     const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
       method: 'POST',
@@ -17,9 +14,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    console.log('Backend response status:', response.status);
     const data = await response.json();
-    console.log('Backend response data:', data);
 
     if (!response.ok) {
       return NextResponse.json(
