@@ -311,26 +311,56 @@ export const authApi = {
  * Properties API
  */
 export const propertiesApi = {
-  async list() { 
-    return apiClient.get('/properties/'); 
+  async list() {
+    const response = await apiClient.get('/properties/');
+    // Handle double-wrapped response from Next.js API route
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async getAll() { 
-    return apiClient.get('/properties/'); 
+  async getAll() {
+    const response = await apiClient.get('/properties/');
+    // Handle double-wrapped response from Next.js API route
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async get(id: string) { 
-    return apiClient.get(`/properties/${id}/`); 
+  async get(id: string) {
+    const response = await apiClient.get(`/properties/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async create(data: any) { 
-    return apiClient.post('/properties/', data); 
+  async create(data: any) {
+    const response = await apiClient.post('/properties/', data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async update(id: string, data: any) { 
-    return apiClient.put(`/properties/${id}/`, data); 
+  async update(id: string, data: any) {
+    const response = await apiClient.put(`/properties/${id}/`, data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async delete(id: string) { 
-    return apiClient.delete(`/properties/${id}/`); 
+  async delete(id: string) {
+    const response = await apiClient.delete(`/properties/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
-  async remove(id: string) { 
-    return apiClient.delete(`/properties/${id}/`); 
+  async remove(id: string) {
+    const response = await apiClient.delete(`/properties/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 };
 
@@ -339,23 +369,48 @@ export const propertiesApi = {
  */
 export const unitsApi = {
   async list(propertyId?: string) {
-    if (propertyId) return apiClient.get(`/properties/${propertyId}/units/`);
-    return apiClient.get('/properties/units/');
+    const response = propertyId
+      ? await apiClient.get(`/properties/${propertyId}/units/`)
+      : await apiClient.get('/properties/units/');
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async getAll() {
-    return apiClient.get('/properties/units/');
+    const response = await apiClient.get('/properties/units/');
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async get(id: string) {
-    return apiClient.get(`/properties/units/${id}/`);
+    const response = await apiClient.get(`/properties/units/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async create(propertyId: string, data: any) {
-    return apiClient.post(`/properties/${propertyId}/units/`, data);
+    const response = await apiClient.post(`/properties/${propertyId}/units/`, data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async update(propertyId: string, unitId: string, data: any) {
-    return apiClient.put(`/properties/${propertyId}/units/${unitId}/`, data);
+    const response = await apiClient.put(`/properties/${propertyId}/units/${unitId}/`, data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async delete(id: string) {
-    return apiClient.delete(`/properties/units/${id}/`);
+    const response = await apiClient.delete(`/properties/units/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 };
 
@@ -364,22 +419,46 @@ export const unitsApi = {
  */
 export const tenantsApi = {
   async list() {
-    return apiClient.get('/tenants/');
+    const response = await apiClient.get('/tenants/');
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async getAll() {
-    return apiClient.get('/tenants/');
+    const response = await apiClient.get('/tenants/');
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async get(id: string) {
-    return apiClient.get(`/tenants/${id}/`);
+    const response = await apiClient.get(`/tenants/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async create(data: any) {
-    return apiClient.post('/tenants/', data);
+    const response = await apiClient.post('/tenants/', data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async update(id: string, data: any) {
-    return apiClient.put(`/tenants/${id}/`, data);
+    const response = await apiClient.put(`/tenants/${id}/`, data);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
   async delete(id: string) {
-    return apiClient.delete(`/tenants/${id}/`);
+    const response = await apiClient.delete(`/tenants/${id}/`);
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 };
 
