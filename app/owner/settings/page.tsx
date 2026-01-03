@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
   User, Bell, Lock, CreditCard, Shield, Trash2,
@@ -43,6 +44,7 @@ interface BillingInfo {
 }
 
 export default function OwnerSettingsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -674,7 +676,10 @@ export default function OwnerSettingsPage() {
                     Billed {billing.billing_cycle} • Next billing: {billing.next_billing_date || 'N/A'}
                   </p>
                 </div>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={() => router.push('/checkout')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   Upgrade Plan
                 </button>
               </div>
@@ -694,7 +699,10 @@ export default function OwnerSettingsPage() {
                       <p className="text-sm text-gray-500">Expires 12/25</p>
                     </div>
                   </div>
-                  <button className="text-blue-600 hover:text-blue-700 font-medium">
+                  <button
+                    onClick={() => router.push('/checkout')}
+                    className="text-blue-600 hover:text-blue-700 font-medium"
+                  >
                     Update
                   </button>
                 </div>
@@ -702,7 +710,10 @@ export default function OwnerSettingsPage() {
                 <div className="text-center py-8 border rounded-lg border-dashed">
                   <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">No payment method added</p>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <button
+                    onClick={() => router.push('/checkout')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
                     Add Payment Method
                   </button>
                 </div>
