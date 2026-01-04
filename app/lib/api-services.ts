@@ -311,15 +311,31 @@ interface RegisterData {
 
 export const authApi = {
   async login(data: LoginData) {
-    return apiClient.post('/auth/login/', data);
+    const response = await apiClient.post('/auth/login/', data);
+    console.log('[authApi.login] Raw response:', JSON.stringify(response, null, 2));
+    // Handle double-wrapped response
+    if (response.success && response.data?.data) {
+      console.log('[authApi.login] Unwrapping data.data');
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 
   async register(data: RegisterData) {
-    return apiClient.post('/auth/signup/', data);
+    const response = await apiClient.post('/auth/signup/', data);
+    console.log('[authApi.register] Raw response:', JSON.stringify(response, null, 2));
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 
   async getCurrentUser() {
-    return apiClient.get('/auth/me/');
+    const response = await apiClient.get('/auth/me/');
+    if (response.success && response.data?.data) {
+      return { success: true, data: response.data.data };
+    }
+    return response;
   },
 
   async logout() {

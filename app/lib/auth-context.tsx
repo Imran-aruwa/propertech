@@ -70,16 +70,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password });
+      console.log('[AuthContext.login] Response:', JSON.stringify(response, null, 2));
 
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Login failed');
       }
 
-      // The response is wrapped: { success, data: { access_token, user_id, ... } }
-      // Need to access the nested data object
-      const backendData = response.data.data || response.data;
+      // authApi.login now unwraps the double-wrapped response
+      // So response.data should be { access_token, user_id, ... } directly
+      const backendData = response.data;
+      console.log('[AuthContext.login] Backend data:', JSON.stringify(backendData, null, 2));
 
       const { access_token, user_id, email: userEmail, full_name, role: userRole } = backendData;
+      console.log('[AuthContext.login] Token:', access_token ? `${access_token.substring(0, 20)}...` : 'MISSING');
 
       // Construct user object from response (safe toLowerCase with fallback)
       const userData = {
