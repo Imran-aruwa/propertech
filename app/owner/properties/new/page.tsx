@@ -23,8 +23,14 @@ interface PropertyFormData {
   unit_prefix: string;
   default_bedrooms: number;
   default_bathrooms: number;
+  default_toilets: number;
   default_rent: number | '';
   default_square_feet: number | '';
+  // Master bedroom
+  default_has_master_bedroom: boolean;
+  // Servant quarters
+  default_has_servant_quarters: boolean;
+  default_sq_bathrooms: number;
 }
 
 export default function NewPropertyPage() {
@@ -71,10 +77,16 @@ export default function NewPropertyPage() {
       // Unit generation defaults
       total_units: 0,
       unit_prefix: 'Unit',
-      default_bedrooms: 1,
-      default_bathrooms: 1,
+      default_bedrooms: 3,
+      default_bathrooms: 2,
+      default_toilets: 3,
       default_rent: '',
-      default_square_feet: ''
+      default_square_feet: '',
+      // Master bedroom
+      default_has_master_bedroom: true,
+      // Servant quarters
+      default_has_servant_quarters: false,
+      default_sq_bathrooms: 0
     },
     validateForm
   );
@@ -90,8 +102,12 @@ export default function NewPropertyPage() {
         unit_prefix: data.unit_prefix || 'Unit',
         default_bedrooms: data.default_bedrooms || 1,
         default_bathrooms: data.default_bathrooms || 1,
+        default_toilets: data.default_toilets || 0,
         default_rent: data.default_rent || null,
-        default_square_feet: data.default_square_feet || null
+        default_square_feet: data.default_square_feet || null,
+        default_has_master_bedroom: data.default_has_master_bedroom || false,
+        default_has_servant_quarters: data.default_has_servant_quarters || false,
+        default_sq_bathrooms: data.default_sq_bathrooms || 0
       };
 
       console.log('[NewProperty] Creating property with data:', apiData);
@@ -377,6 +393,25 @@ export default function NewPropertyPage() {
                 </select>
               </div>
 
+              {/* Default Toilets */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Default Toilets (Separate)
+                </label>
+                <select
+                  value={values.default_toilets}
+                  onChange={(e) => handleChange('default_toilets', parseInt(e.target.value))}
+                  onBlur={() => handleBlur('default_toilets')}
+                  className={inputClasses('default_toilets')}
+                >
+                  <option value="0">0 Toilets</option>
+                  <option value="1">1 Toilet</option>
+                  <option value="2">2 Toilets</option>
+                  <option value="3">3 Toilets</option>
+                  <option value="4">4+ Toilets</option>
+                </select>
+              </div>
+
               {/* Default Rent */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -410,11 +445,68 @@ export default function NewPropertyPage() {
               </div>
             </div>
 
+            {/* Additional Features Section */}
+            <div className="mt-6 pt-6 border-t border-blue-200">
+              <h4 className="text-md font-medium text-gray-800 mb-4">Additional Features</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Master Bedroom */}
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                  <input
+                    type="checkbox"
+                    id="master_bedroom"
+                    checked={values.default_has_master_bedroom}
+                    onChange={(e) => handleChange('default_has_master_bedroom', e.target.checked)}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="master_bedroom" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Has Master Bedroom (En-suite)
+                  </label>
+                </div>
+
+                {/* Servant Quarters */}
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                  <input
+                    type="checkbox"
+                    id="servant_quarters"
+                    checked={values.default_has_servant_quarters}
+                    onChange={(e) => handleChange('default_has_servant_quarters', e.target.checked)}
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="servant_quarters" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Has Servant Quarters (SQ)
+                  </label>
+                </div>
+
+                {/* SQ Bathrooms - only show if servant quarters is checked */}
+                {values.default_has_servant_quarters && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      SQ Bathrooms
+                    </label>
+                    <select
+                      value={values.default_sq_bathrooms}
+                      onChange={(e) => handleChange('default_sq_bathrooms', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                    >
+                      <option value="0">No Bathroom</option>
+                      <option value="1">1 Bathroom</option>
+                      <option value="2">2 Bathrooms</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {values.total_units > 0 && (
               <div className="mt-4 p-3 bg-blue-100 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>{values.total_units}</strong> units will be automatically created with prefix "{values.unit_prefix}"
-                  (e.g., {values.unit_prefix} 1, {values.unit_prefix} 2, ... {values.unit_prefix} {values.total_units})
+                  <strong>{values.total_units}</strong> units will be created: {values.default_bedrooms} BR, {values.default_bathrooms} Bath
+                  {values.default_toilets > 0 && `, ${values.default_toilets} Toilets`}
+                  {values.default_has_master_bedroom && ', Master Bedroom'}
+                  {values.default_has_servant_quarters && `, SQ with ${values.default_sq_bathrooms} bathroom(s)`}
+                </p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Units: {values.unit_prefix} 1, {values.unit_prefix} 2, ... {values.unit_prefix} {values.total_units}
                 </p>
               </div>
             )}

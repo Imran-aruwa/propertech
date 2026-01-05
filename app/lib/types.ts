@@ -70,8 +70,14 @@ export interface CreatePropertyData {
   unit_prefix?: string;
   default_bedrooms?: number;
   default_bathrooms?: number;
+  default_toilets?: number;
   default_rent?: number;
   default_square_feet?: number;
+  // Master bedroom
+  default_has_master_bedroom?: boolean;
+  // Servant quarters
+  default_has_servant_quarters?: boolean;
+  default_sq_bathrooms?: number;
 }
 
 // ==================== UNIT ====================
@@ -81,15 +87,23 @@ export interface Unit {
   id: number;
   property_id: number;
   unit_number: string;
-  floor: number;
+  floor?: number;
   bedrooms: number;
   bathrooms: number;
-  size_sqm: number;
-  rent_amount: number;
-  status: UnitStatus;
-  description: string | null;
+  toilets?: number;
+  size_sqm?: number;
+  square_feet?: number;
+  rent_amount?: number;
+  monthly_rent?: number;
+  status: UnitStatus | 'vacant';
+  description?: string | null;
+  // Master bedroom
+  has_master_bedroom?: boolean;
+  // Servant quarters
+  has_servant_quarters?: boolean;
+  sq_bathrooms?: number;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   property?: Property;
   tenant?: Tenant;
   meter_readings?: MeterReading[];
