@@ -81,19 +81,23 @@ export default function PropertyDetailPage() {
     }
   };
 
-  const formatCurrency = (amount: number) => `KES ${amount.toLocaleString()}`;
+  const formatCurrency = (amount: number | null | undefined) => {
+    const safeAmount = amount || 0;
+    return `KES ${safeAmount.toLocaleString()}`;
+  };
 
   const statusColors: Record<string, string> = {
     available: 'bg-green-100 text-green-800',
+    vacant: 'bg-green-100 text-green-800',
     occupied: 'bg-blue-100 text-blue-800',
     maintenance: 'bg-orange-100 text-orange-800'
   };
 
-  // Calculate stats
+  // Calculate stats - handle both rent_amount and monthly_rent field names
   const totalUnits = units.length;
   const occupiedUnits = units.filter(u => u.status === 'occupied').length;
-  const availableUnits = units.filter(u => u.status === 'available').length;
-  const totalRent = units.reduce((sum, u) => sum + u.rent_amount, 0);
+  const availableUnits = units.filter(u => u.status === 'available' || u.status === 'vacant').length;
+  const totalRent = units.reduce((sum, u) => sum + ((u as any).monthly_rent || (u as any).rent_amount || 0), 0);
   const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
 
   if (authLoading || loading) {
@@ -271,25 +275,27 @@ export default function PropertyDetailPage() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="font-semibold text-gray-900">{unit.unit_number}</h3>
-                          <p className="text-sm text-gray-600">Floor {unit.floor}</p>
+                          {(unit as any).floor && <p className="text-sm text-gray-600">Floor {(unit as any).floor}</p>}
                         </div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[unit.status]}`}>
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[unit.status] || 'bg-gray-100 text-gray-800'}`}>
                           {unit.status}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                         <span className="flex items-center gap-1">
-                          <Bed className="w-4 h-4" /> {unit.bedrooms}
+                          <Bed className="w-4 h-4" /> {unit.bedrooms || 0}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Bath className="w-4 h-4" /> {unit.bathrooms}
+                          <Bath className="w-4 h-4" /> {unit.bathrooms || 0}
                         </span>
-                        <span>{unit.size_sqm} m²</span>
+                        {((unit as any).square_feet || (unit as any).size_sqm) && (
+                          <span>{(unit as any).square_feet || (unit as any).size_sqm} {(unit as any).square_feet ? 'sq ft' : 'm²'}</span>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-gray-900">{formatCurrency(unit.rent_amount)}/mo</span>
+                        <span className="font-bold text-gray-900">{formatCurrency((unit as any).monthly_rent || (unit as any).rent_amount)}/mo</span>
                         <Link
                           href={`/owner/units/${unit.id}`}
                           className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
