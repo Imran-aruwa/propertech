@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/properties`, {
+    console.log('[API/properties POST] Creating property with auth:', authHeader ? 'Present' : 'MISSING');
+    console.log('[API/properties POST] Body:', JSON.stringify(body));
+
+    const response = await fetch(`${BACKEND_URL}/api/properties/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,11 +69,14 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    console.log('[API/properties POST] Backend response status:', response.status);
+
     const data = await response.json();
 
     if (!response.ok) {
+      console.log('[API/properties POST] Backend error:', JSON.stringify(data));
       return NextResponse.json(
-        { success: false, error: data.detail || 'Failed to create property' },
+        { success: false, error: data.detail || data.message || data.error || 'Failed to create property' },
         { status: response.status }
       );
     }
