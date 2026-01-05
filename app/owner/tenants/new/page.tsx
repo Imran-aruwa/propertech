@@ -320,7 +320,7 @@ export default function NewTenantPage() {
                   <option value="">Select a unit</option>
                   {availableUnits.map(unit => (
                     <option key={unit.id} value={unit.id}>
-                      {unit.unit_number} - {unit.bedrooms} BR - KES {unit.rent_amount.toLocaleString()}/mo
+                      {unit.unit_number} - {unit.bedrooms} BR - KES {((unit as any).monthly_rent || unit.rent_amount || 0).toLocaleString()}/mo
                     </option>
                   ))}
                 </select>

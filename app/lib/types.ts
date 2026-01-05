@@ -78,10 +78,12 @@ export interface CreatePropertyData {
   // Servant quarters
   default_has_servant_quarters?: boolean;
   default_sq_bathrooms?: number;
+  // Unit description
+  default_unit_description?: string;
 }
 
 // ==================== UNIT ====================
-export type UnitStatus = 'available' | 'occupied' | 'maintenance';
+export type UnitStatus = 'available' | 'occupied' | 'maintenance' | 'vacant';
 
 export interface Unit {
   id: number;
@@ -95,7 +97,7 @@ export interface Unit {
   square_feet?: number;
   rent_amount?: number;
   monthly_rent?: number;
-  status: UnitStatus | 'vacant';
+  status: UnitStatus;
   description?: string | null;
   // Master bedroom
   has_master_bedroom?: boolean;

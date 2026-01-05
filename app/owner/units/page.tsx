@@ -184,7 +184,7 @@ export default function OwnerUnitsPage() {
               <DollarSign className="w-5 h-5 text-purple-600" />
             </div>
             <p className="text-3xl font-bold text-purple-600">
-              KSh {units.length > 0 ? Math.round(units.reduce((sum, u) => sum + u.rent_amount, 0) / units.length).toLocaleString() : 0}
+              KSh {units.length > 0 ? Math.round(units.reduce((sum, u) => sum + ((u as any).monthly_rent || u.rent_amount || 0), 0) / units.length).toLocaleString() : 0}
             </p>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function OwnerUnitsPage() {
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-gray-600">Monthly Rent</span>
                       <span className="font-bold text-lg text-gray-900">
-                        KSh {unit.rent_amount.toLocaleString()}
+                        KSh {((unit as any).monthly_rent || unit.rent_amount || 0).toLocaleString()}
                       </span>
                     </div>
                   </div>

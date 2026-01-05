@@ -31,6 +31,8 @@ interface PropertyFormData {
   // Servant quarters
   default_has_servant_quarters: boolean;
   default_sq_bathrooms: number;
+  // Unit description
+  default_unit_description: string;
 }
 
 export default function NewPropertyPage() {
@@ -86,7 +88,9 @@ export default function NewPropertyPage() {
       default_has_master_bedroom: true,
       // Servant quarters
       default_has_servant_quarters: false,
-      default_sq_bathrooms: 0
+      default_sq_bathrooms: 0,
+      // Unit description
+      default_unit_description: ''
     },
     validateForm
   );
@@ -107,7 +111,8 @@ export default function NewPropertyPage() {
         default_square_feet: data.default_square_feet || null,
         default_has_master_bedroom: data.default_has_master_bedroom || false,
         default_has_servant_quarters: data.default_has_servant_quarters || false,
-        default_sq_bathrooms: data.default_sq_bathrooms || 0
+        default_sq_bathrooms: data.default_sq_bathrooms || 0,
+        default_unit_description: data.default_unit_description || null
       };
 
       console.log('[NewProperty] Creating property with data:', apiData);
@@ -494,6 +499,23 @@ export default function NewPropertyPage() {
                     </select>
                   </div>
                 )}
+              </div>
+
+              {/* Unit Description */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Unit Description (applies to all units)
+                </label>
+                <textarea
+                  value={values.default_unit_description}
+                  onChange={(e) => handleChange('default_unit_description', e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                  placeholder="e.g., Master en-suite, 2 guest toilets, external SQ with washroom"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This description will be added to all generated units. You can edit individual units later.
+                </p>
               </div>
             </div>
 

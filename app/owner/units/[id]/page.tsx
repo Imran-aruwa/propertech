@@ -225,7 +225,7 @@ export default function UnitDetailPage() {
                 </div>
                 <div className="text-center p-4 bg-gray-50 rounded-lg">
                   <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{(unit.rent_amount / 1000).toFixed(0)}K</p>
+                  <p className="text-2xl font-bold text-gray-900">{(((unit as any).monthly_rent || unit.rent_amount || 0) / 1000).toFixed(0)}K</p>
                   <p className="text-sm text-gray-600">KES/Month</p>
                 </div>
               </div>
@@ -297,11 +297,11 @@ export default function UnitDetailPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Monthly Rent</span>
-                  <span className="text-2xl font-bold text-gray-900">{formatCurrency(unit.rent_amount)}</span>
+                  <span className="text-2xl font-bold text-gray-900">{formatCurrency((unit as any).monthly_rent || unit.rent_amount || 0)}</span>
                 </div>
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    {formatCurrency(unit.rent_amount / unit.size_sqm)}/m² per month
+                    {formatCurrency((((unit as any).monthly_rent || unit.rent_amount || 0) / (unit.size_sqm || 1)))}/m² per month
                   </p>
                 </div>
               </div>

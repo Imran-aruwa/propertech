@@ -18,7 +18,7 @@ interface UnitFormData {
   bathrooms: string;
   size_sqm: string;
   rent_amount: string;
-  status: 'available' | 'occupied' | 'maintenance';
+  status: 'available' | 'occupied' | 'maintenance' | 'vacant';
   description: string;
 }
 
@@ -41,7 +41,7 @@ export default function EditUnitPage() {
     bathrooms: '',
     size_sqm: '',
     rent_amount: '',
-    status: 'available',
+    status: 'vacant',
     description: ''
   });
 
@@ -303,6 +303,7 @@ export default function EditUnitPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
+                  <option value="vacant">Vacant</option>
                   <option value="available">Available</option>
                   <option value="occupied">Occupied</option>
                   <option value="maintenance">Under Maintenance</option>
