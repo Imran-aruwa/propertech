@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 import { propertiesApi, unitsApi } from '@/lib/api-services';
 import { useToast } from '@/app/lib/hooks';
 import { ToastContainer } from '@/components/ui/Toast';
@@ -18,7 +18,7 @@ import { Property, Unit } from '@/app/lib/types';
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { isLoading: authLoading, isAuthenticated } = useRequireAuth('owner');
+  const { isLoading: authLoading, isAuthenticated, token, role } = useAuth();
   const { toasts, success, error: showError, removeToast } = useToast();
   const [property, setProperty] = useState<Property | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -30,10 +30,10 @@ export default function PropertyDetailPage() {
 
   // Fetch property data only once when authenticated
   useEffect(() => {
-    // Skip if still loading auth or not authenticated
-    if (authLoading || !isAuthenticated) return;
-
-    // Skip if no property ID
+    if (authLoading) return;
+    if (!isAuthenticated) { router.push('/login'); return; }
+    if (role && role !== 'owner') { router.push('/unauthorized'); return; }
+    if (!token) return;
     if (!propertyId) return;
 
     let isMounted = true;
@@ -83,7 +83,7 @@ export default function PropertyDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, isAuthenticated, propertyId]); // Removed router from deps
+  }, [authLoading, isAuthenticated, propertyId, token, role, router]);
 
   const handleDelete = async () => {
     try {

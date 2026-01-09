@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useRequireAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 import { propertiesApi } from '@/lib/api-services';
 import { useToast } from '@/app/lib/hooks';
 import { ToastContainer } from '@/components/ui/Toast';
@@ -36,7 +36,7 @@ interface PropertyFormData {
 export default function EditPropertyPage() {
   const params = useParams();
   const router = useRouter();
-  const { isLoading: authLoading, isAuthenticated } = useRequireAuth('owner');
+  const { isLoading: authLoading, isAuthenticated, token, role } = useAuth();
   const { toasts, success, error: showError, removeToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,10 @@ export default function EditPropertyPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof PropertyFormData, string>>>({});
 
   useEffect(() => {
-    if (authLoading || !isAuthenticated || !propertyId) return;
+    if (authLoading) return;
+    if (!isAuthenticated) { router.push('/login'); return; }
+    if (role && role !== 'owner') { router.push('/unauthorized'); return; }
+    if (!token || !propertyId) return;
 
     let isMounted = true;
 
@@ -97,7 +100,7 @@ export default function EditPropertyPage() {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, isAuthenticated, propertyId]); // Removed router and showError from deps
+  }, [authLoading, isAuthenticated, propertyId, token, role, router]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PropertyFormData, string>> = {};
