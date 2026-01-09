@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header';
 import { useAuth } from '@/app/lib/auth-context';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { X } from 'lucide-react';
+import { ChatbotWidget } from '@/components/chatbot';
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -72,6 +73,15 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
+
+      {/* AI Chatbot Widget */}
+      <ChatbotWidget
+        position="bottom-right"
+        theme="blue"
+        title="Propertech Assistant"
+        subtitle="Online"
+        greeting="Hi! I'm your Propertech assistant. How can I help you manage your properties today?"
+      />
     </div>
   );
 }
