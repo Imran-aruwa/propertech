@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Propertech Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 360px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8fafc;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .header-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .login-section {
+      padding: 24px 16px;
+      display: none;
+    }
+
+    .login-section.active {
+      display: block;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .dashboard-section {
+      display: none;
+    }
+
+    .dashboard-section.active {
+      display: block;
+    }
+
+    .user-info {
+      padding: 16px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: #2563eb;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: capitalize;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .quick-actions {
+      padding: 0 16px 16px;
+    }
+
+    .quick-actions h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .action-btn:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .action-btn-icon {
+      width: 32px;
+      height: 32px;
+      background: #eff6ff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .notifications {
+      padding: 0 16px 16px;
+    }
+
+    .notifications h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 12px;
+    }
+
+    .notification-list {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .notification-item {
+      padding: 12px;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      gap: 12px;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-dot {
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #111827;
+    }
+
+    .notification-time {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .chatbot-toggle {
+      padding: 16px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .chatbot-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .chatbot-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-icon">🏠</div>
+    <div class="header-text">
+      <h1>Propertech</h1>
+      <p>Property Management Assistant</p>
+    </div>
+  </div>
+
+  <!-- Login Section -->
+  <div id="loginSection" class="login-section active">
+    <form class="login-form" id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+      </div>
+      <div id="errorMessage" class="error-message"></div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <span id="loginText">Sign In</span>
+        <span id="loginLoader" class="loading" style="display: none;"></span>
+      </button>
+      <button type="button" class="btn btn-secondary" id="openAppBtn">
+        Open Propertech App
+      </button>
+    </form>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboardSection" class="dashboard-section">
+    <div class="user-info">
+      <div class="user-details">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div>
+          <div class="user-name" id="userName">User</div>
+          <div class="user-role" id="userRole">Owner</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary" id="logoutBtn" style="padding: 8px 12px; font-size: 12px;">
+        Logout
+      </button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="propertiesCount">0</div>
+        <div class="stat-label">Properties</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="unitsCount">0</div>
+        <div class="stat-label">Total Units</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="occupancyRate">0%</div>
+        <div class="stat-label">Occupancy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pendingPayments">0</div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="action-grid">
+        <a href="#" class="action-btn" id="dashboardLink">
+          <div class="action-btn-icon">📊</div>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="action-btn" id="propertiesLink">
+          <div class="action-btn-icon">🏢</div>
+          <span>Properties</span>
+        </a>
+        <a href="#" class="action-btn" id="tenantsLink">
+          <div class="action-btn-icon">👥</div>
+          <span>Tenants</span>
+        </a>
+        <a href="#" class="action-btn" id="paymentsLink">
+          <div class="action-btn-icon">💰</div>
+          <span>Payments</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="notifications">
+      <h3>Recent Notifications</h3>
+      <div class="notification-list" id="notificationList">
+        <div class="notification-item">
+          <div class="notification-dot"></div>
+          <div class="notification-content">
+            <div class="notification-title">No new notifications</div>
+            <div class="notification-time">Check back later</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chatbot-toggle">
+      <button class="chatbot-btn" id="openChatbot">
+        <span>🤖</span>
+        <span>Open AI Assistant</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="src/popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Propertech Assistant",
+  "version": "1.0.0",
+  "description": "Property management assistant - Quick access to your Propertech dashboard, notifications, and AI-powered property insights.",
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.propertechsoftware.com/*",
+    "https://propertechsoftware.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Propertech Assistant"
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.propertechsoftware.com/*", "https://propertechsoftware.com/*"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["src/chatbot-inject.js", "src/chatbot.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
