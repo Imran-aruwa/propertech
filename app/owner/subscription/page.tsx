@@ -16,10 +16,10 @@ const plans = [
 export default function SubscriptionPage() {
   const { isAuthenticated, role, isLoading: authLoading, token } = useAuth();
   const router = useRouter();
-  const [subscription, setSubscription] = useState(null);
+  const [subscription, setSubscription] = useState<{ plan: string; status: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState('monthly');
-  const [upgrading, setUpgrading] = useState(null);
+  const [upgrading, setUpgrading] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -31,10 +31,11 @@ export default function SubscriptionPage() {
       .finally(() => setLoading(false));
   }, [authLoading, isAuthenticated, role, router, token]);
 
-  const handleUpgrade = async (planId) => {
+  const handleUpgrade = async (planId: string) => {
     if (planId === 'free') return;
     setUpgrading(planId);
     const plan = plans.find(p => p.id === planId);
+    if (!plan) return;
     const amount = billingCycle === 'monthly' ? plan.price : plan.yearlyPrice;
     try {
       const r = await fetch('/api/payments/initialize', {
