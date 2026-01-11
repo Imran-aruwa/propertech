@@ -229,7 +229,7 @@ export function useAuth() {
 
 // Protected route wrapper
 export function useRequireAuth(requiredRole?: string) {
-  const { isAuthenticated, isLoading, role, user } = useAuth();
+  const { isAuthenticated, isLoading, role, user, token } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -242,5 +242,5 @@ export function useRequireAuth(requiredRole?: string) {
     }
   }, [isAuthenticated, isLoading, role, requiredRole, router]);
 
-  return { isAuthenticated, isLoading, role, user };
+  return { isAuthenticated, isLoading, role, user, token };
 }

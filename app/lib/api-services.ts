@@ -381,7 +381,7 @@ export const propertiesApi = {
     return response;
   },
   async get(id: string) {
-    const response = await apiClient.get(`/properties/${id}/`);
+    const response = await apiClient.get(`/properties/${id}`);
     if (response.success && response.data?.data) {
       return { success: true, data: response.data.data };
     }
@@ -395,21 +395,21 @@ export const propertiesApi = {
     return response;
   },
   async update(id: string, data: any) {
-    const response = await apiClient.put(`/properties/${id}/`, data);
+    const response = await apiClient.put(`/properties/${id}`, data);
     if (response.success && response.data?.data) {
       return { success: true, data: response.data.data };
     }
     return response;
   },
   async delete(id: string) {
-    const response = await apiClient.delete(`/properties/${id}/`);
+    const response = await apiClient.delete(`/properties/${id}`);
     if (response.success && response.data?.data) {
       return { success: true, data: response.data.data };
     }
     return response;
   },
   async remove(id: string) {
-    const response = await apiClient.delete(`/properties/${id}/`);
+    const response = await apiClient.delete(`/properties/${id}`);
     if (response.success && response.data?.data) {
       return { success: true, data: response.data.data };
     }
