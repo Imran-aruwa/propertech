@@ -86,14 +86,17 @@ export default function NewTenantPage() {
   }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
+    // Include both 'available' and 'vacant' status units
+    const isAvailable = (u: Unit) => u.status === 'available' || u.status === 'vacant';
+
     if (selectedProperty) {
       const filtered = units.filter(
-        u => u.property_id === parseInt(selectedProperty) && u.status === 'available'
+        u => u.property_id === parseInt(selectedProperty) && isAvailable(u)
       );
       setAvailableUnits(filtered);
       setFormData(prev => ({ ...prev, unit_id: '' }));
     } else {
-      setAvailableUnits(units.filter(u => u.status === 'available'));
+      setAvailableUnits(units.filter(isAvailable));
     }
   }, [selectedProperty, units]);
 

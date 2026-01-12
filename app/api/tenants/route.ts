@@ -31,7 +31,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data: data });
+    // Handle potential double-wrapping from backend
+    let tenantsData = data;
+    if (data.data && (Array.isArray(data.data) || typeof data.data === 'object')) {
+      tenantsData = data.data;
+    }
+
+    return NextResponse.json({ success: true, data: tenantsData });
   } catch (error: any) {
     console.error('Tenants API Error:', error);
     return NextResponse.json(

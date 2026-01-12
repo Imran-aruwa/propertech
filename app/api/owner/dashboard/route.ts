@@ -31,7 +31,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data: data });
+    // Handle potential double-wrapping from backend
+    // Backend may return { data: {...} } or { success: true, data: {...} } or just {...}
+    let dashboardData = data;
+    if (data.data && typeof data.data === 'object') {
+      dashboardData = data.data;
+    }
+
+    return NextResponse.json({ success: true, data: dashboardData });
   } catch (error: any) {
     console.error('Owner Dashboard API Error:', error);
     return NextResponse.json(

@@ -31,7 +31,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data: data });
+    // Handle potential double-wrapping from backend
+    let staffData = data;
+    if (data.data && (Array.isArray(data.data) || typeof data.data === 'object')) {
+      staffData = data.data;
+    }
+
+    return NextResponse.json({ success: true, data: staffData });
   } catch (error: any) {
     console.error('Staff API Error:', error);
     return NextResponse.json(
