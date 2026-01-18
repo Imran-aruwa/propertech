@@ -25,14 +25,17 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedAuth = formatAuthHeader(authHeader);
+    // Use URL without trailing slash to avoid 307 redirect that drops auth header
+    const backendUrl = `${BACKEND_URL}/api/tenant/dashboard`;
 
-    const response = await fetch(`${BACKEND_URL}/api/tenant/dashboard/`, {
+    const response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': formattedAuth,
       },
       cache: 'no-store',
+      redirect: 'follow',
     });
 
     console.log('[API/tenant/dashboard] Backend status:', response.status);
