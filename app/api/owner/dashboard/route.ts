@@ -29,22 +29,41 @@ export async function GET(request: NextRequest) {
     }
 
     const formattedAuth = formatAuthHeader(authHeader);
-    // Use URL without trailing slash to avoid 307 redirect that drops auth header
+    // NO trailing slash - FastAPI route is /dashboard without slash
     const backendUrl = `${BACKEND_URL}/api/owner/dashboard`;
-    console.log('[API/owner/dashboard] Calling backend:', backendUrl);
+    console.log('[API/owner/dashboard] Backend URL:', backendUrl);
+    console.log('[API/owner/dashboard] Sending auth header:', formattedAuth.substring(0, 20) + '...');
 
-    const response = await fetch(backendUrl, {
+    // Use redirect: 'manual' to handle redirects ourselves and preserve auth
+    let response = await fetch(backendUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': formattedAuth,
       },
       cache: 'no-store',
-      redirect: 'follow',
+      redirect: 'manual',
     });
+
+    // Handle redirect manually to preserve Authorization header
+    if (response.status === 307 || response.status === 308) {
+      const redirectUrl = response.headers.get('location');
+      console.log('[API/owner/dashboard] Redirected to:', redirectUrl);
+      if (redirectUrl) {
+        response = await fetch(redirectUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': formattedAuth,
+          },
+          cache: 'no-store',
+        });
+      }
+    }
 
     console.log('[API/owner/dashboard] Backend status:', response.status);
     const data = await response.json();
+    console.log('[API/owner/dashboard] Response data keys:', Object.keys(data));
 
     if (!response.ok) {
       console.log('[API/owner/dashboard] Backend error:', JSON.stringify(data));
