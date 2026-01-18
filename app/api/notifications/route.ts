@@ -2,49 +2,64 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.propertechsoftware.com';
 
+// Helper to ensure proper Bearer token format
+function formatAuthHeader(authHeader: string): string {
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader;
+  }
+  return `Bearer ${authHeader}`;
+}
+
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
+    // Try both cases for header name
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+
+    console.log('[API/notifications] Auth header present:', !!authHeader);
 
     if (!authHeader) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - No token provided' },
-        { status: 401 }
-      );
+      // Return empty array if no auth - notifications are optional
+      return NextResponse.json({ success: true, data: [] }, { status: 200 });
     }
+
+    const formattedAuth = formatAuthHeader(authHeader);
 
     const response = await fetch(`${BACKEND_URL}/api/notifications/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader,
+        'Authorization': formattedAuth,
       },
     });
 
-    const data = await response.json();
+    console.log('[API/notifications] Backend status:', response.status);
 
     if (!response.ok) {
       // If backend doesn't have notifications endpoint yet, return empty array
       if (response.status === 404) {
-        return NextResponse.json([], { status: 200 });
+        return NextResponse.json({ success: true, data: [] }, { status: 200 });
       }
-      return NextResponse.json(
-        { success: false, error: data.detail || 'Failed to fetch notifications' },
-        { status: response.status }
-      );
+      // For other errors including auth errors, return empty array
+      // Notifications shouldn't block the app
+      console.log('[API/notifications] Backend error, returning empty array');
+      return NextResponse.json({ success: true, data: [] }, { status: 200 });
     }
 
-    return NextResponse.json(data, { status: 200 });
+    const data = await response.json();
+    // Handle different response formats
+    const notifications = Array.isArray(data) ? data : (data.data || data.notifications || []);
+    return NextResponse.json({ success: true, data: notifications }, { status: 200 });
   } catch (error: any) {
     console.error('Notifications API error:', error);
     // Return empty array if backend is unreachable
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ success: true, data: [] }, { status: 200 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization');
+    // Try both cases for header name
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
 
     if (!authHeader) {
       return NextResponse.json(
@@ -53,13 +68,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const formattedAuth = formatAuthHeader(authHeader);
     const body = await req.json();
 
     const response = await fetch(`${BACKEND_URL}/api/notifications/mark-all-read/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader,
+        'Authorization': formattedAuth,
       },
       body: JSON.stringify(body),
     });

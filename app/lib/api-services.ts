@@ -26,9 +26,30 @@ export function getAuthToken(): string | null {
       console.log('[getAuthToken] Running on server, no window');
       return null;
     }
-    const token = localStorage.getItem('auth_token') || localStorage.getItem('token') || localStorage.getItem('access_token');
-    console.log('[getAuthToken] Token found:', token ? `${token.substring(0, 20)}...` : 'NULL');
-    return token;
+    const authToken = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
+    const accessToken = localStorage.getItem('access_token');
+
+    const foundToken = authToken || token || accessToken;
+
+    console.log('[getAuthToken] auth_token:', authToken ? `${authToken.substring(0, 30)}...` : 'NULL');
+    console.log('[getAuthToken] token:', token ? `${token.substring(0, 30)}...` : 'NULL');
+    console.log('[getAuthToken] access_token:', accessToken ? `${accessToken.substring(0, 30)}...` : 'NULL');
+    console.log('[getAuthToken] Using token:', foundToken ? `${foundToken.substring(0, 30)}...` : 'NULL');
+
+    // Check if token looks like a JWT
+    if (foundToken) {
+      const parts = foundToken.split('.');
+      if (parts.length !== 3) {
+        console.warn('[getAuthToken] Token does not appear to be a valid JWT (expected 3 parts, got', parts.length, ')');
+      }
+      // Check if token has Bearer prefix (shouldn't have)
+      if (foundToken.startsWith('Bearer ')) {
+        console.warn('[getAuthToken] Token starts with "Bearer " - this may cause issues');
+      }
+    }
+
+    return foundToken;
   } catch (error) {
     console.error('[getAuthToken] Error getting auth token:', error);
     return null;
@@ -83,9 +104,11 @@ export const apiClient = {
         'Content-Type': 'application/json',
       };
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // Ensure we don't double-add Bearer prefix
+        const authValue = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers['Authorization'] = authValue;
+        console.log(`[apiClient.get] ${endpoint} - Auth header:`, authValue.substring(0, 40) + '...');
       }
-      console.log('[apiClient.get] Headers:', Object.keys(headers));
 
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'GET',
@@ -132,9 +155,11 @@ export const apiClient = {
         'Content-Type': 'application/json',
       };
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // Ensure we don't double-add Bearer prefix
+        const authValue = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers['Authorization'] = authValue;
+        console.log(`[apiClient.post] ${endpoint} - Auth header:`, authValue.substring(0, 40) + '...');
       }
-      console.log('[apiClient.post] Headers:', Object.keys(headers));
 
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
@@ -176,11 +201,13 @@ export const apiClient = {
   async patch<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
     try {
       const token = getAuthToken();
+      const authValue = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : null;
+
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(authValue && { Authorization: authValue }),
         },
         body: body ? JSON.stringify(body) : undefined,
       });
@@ -217,11 +244,13 @@ export const apiClient = {
   async put<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
     try {
       const token = getAuthToken();
+      const authValue = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : null;
+
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(authValue && { Authorization: authValue }),
         },
         body: body ? JSON.stringify(body) : undefined,
       });
@@ -258,11 +287,13 @@ export const apiClient = {
   async delete<T = any>(endpoint: string): Promise<ApiResponse<T>> {
     try {
       const token = getAuthToken();
+      const authValue = token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : null;
+
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          ...(authValue && { Authorization: authValue }),
         },
       });
 

@@ -7,6 +7,14 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.propertechso
  * This handles ALL /api/* routes that don't have specific handlers
  */
 
+// Helper to ensure proper Bearer token format
+function formatAuthHeader(authHeader: string): string {
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader;
+  }
+  return `Bearer ${authHeader}`;
+}
+
 async function proxyRequest(request: NextRequest, method: string) {
   try {
     const url = new URL(request.url);
@@ -52,11 +60,13 @@ async function proxyRequest(request: NextRequest, method: string) {
       'Content-Type': 'application/json',
     };
 
-    // Forward authorization header
-    const authHeader = request.headers.get('authorization');
+    // Forward authorization header (try both cases)
+    const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
     if (authHeader) {
-      headers['Authorization'] = authHeader;
+      headers['Authorization'] = formatAuthHeader(authHeader);
     }
+
+    console.log(`[API Proxy] ${method} ${path} - Auth:`, authHeader ? 'Present' : 'MISSING');
 
     // Build fetch options
     const fetchOptions: RequestInit = {
@@ -78,6 +88,8 @@ async function proxyRequest(request: NextRequest, method: string) {
 
     // Make request to backend
     const response = await fetch(backendUrl, fetchOptions);
+
+    console.log(`[API Proxy] ${method} ${path} - Backend status:`, response.status);
 
     // Get response data
     let data;

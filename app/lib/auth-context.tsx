@@ -90,8 +90,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const backendData = response.data;
       console.log('[AuthContext.login] Backend data:', JSON.stringify(backendData, null, 2));
 
-      const { access_token, user_id, email: userEmail, full_name, role: userRole } = backendData;
-      console.log('[AuthContext.login] Token:', access_token ? `${access_token.substring(0, 20)}...` : 'MISSING');
+      let { access_token } = backendData;
+      const { user_id, email: userEmail, full_name, role: userRole } = backendData;
+      console.log('[AuthContext.login] Raw token:', access_token ? `${access_token.substring(0, 40)}...` : 'MISSING');
+      console.log('[AuthContext.login] Token length:', access_token?.length || 0);
+
+      // Clean and validate token format
+      if (access_token) {
+        // Remove Bearer prefix if present (it shouldn't be, but just in case)
+        if (access_token.startsWith('Bearer ')) {
+          console.warn('[AuthContext.login] Token starts with "Bearer " - removing prefix');
+          access_token = access_token.substring(7);
+        }
+
+        const parts = access_token.split('.');
+        if (parts.length !== 3) {
+          console.warn('[AuthContext.login] Token does not appear to be valid JWT (expected 3 parts, got', parts.length, ')');
+        } else {
+          console.log('[AuthContext.login] Token appears to be valid JWT format');
+        }
+      }
 
       // Construct user object from response (safe toLowerCase with fallback)
       const userData = {
@@ -104,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         created_at: new Date().toISOString()
       };
 
-      // Save to localStorage
+      // Save cleaned token to localStorage
+      console.log('[AuthContext.login] Saving token to localStorage');
       localStorage.setItem('auth_token', access_token);
       localStorage.setItem('auth_user', JSON.stringify(userData));
       localStorage.setItem('user_role', userData.role);
